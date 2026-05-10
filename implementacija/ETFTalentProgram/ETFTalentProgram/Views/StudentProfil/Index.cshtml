@@ -1,0 +1,89 @@
+﻿@model IEnumerable<ETFTalentProgram.Models.StudentProfil>
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<h1>Index</h1>
+
+<p>
+    <a asp-action="Create">Create New</a>
+</p>
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.Rang)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Biografija)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Vjestine)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Projekti)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.PreferiraneLokacije)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.PreferiraneTehnologije)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.DostupanOd)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.DatumAzuriranja)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.StatusVerifikacije)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Student)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model) {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.Rang)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Biografija)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Vjestine)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Projekti)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.PreferiraneLokacije)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.PreferiraneTehnologije)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.DostupanOd)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.DatumAzuriranja)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.StatusVerifikacije)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Student.Id)
+            </td>
+            <td>
+                <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
+                <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
+                <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
+            </td>
+        </tr>
+}
+    </tbody>
+</table>

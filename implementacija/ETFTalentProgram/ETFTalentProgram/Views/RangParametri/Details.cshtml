@@ -1,0 +1,54 @@
+﻿@model ETFTalentProgram.Models.RangParametri
+
+@{
+    ViewData["Title"] = "Details";
+}
+
+<h1>Details</h1>
+
+<div>
+    <h4>RangParametri</h4>
+    <hr />
+    <dl class="row">
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.TezinaProsjecneOcjene)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.TezinaProsjecneOcjene)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.TezinaECTS)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.TezinaECTS)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.TezinaBrojVjestina)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.TezinaBrojVjestina)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.TezinaBrojProjekata)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.TezinaBrojProjekata)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.Verzija)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.Verzija)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.DatumPrimjene)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.DatumPrimjene)
+        </dd>
+    </dl>
+</div>
+<div>
+    <a asp-action="Edit" asp-route-id="@Model?.Id">Edit</a> |
+    <a asp-action="Index">Back to List</a>
+</div>

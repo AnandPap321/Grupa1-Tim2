@@ -1,0 +1,78 @@
+﻿@model ETFTalentProgram.Models.StudentProfil
+
+@{
+    ViewData["Title"] = "Details";
+}
+
+<h1>Details</h1>
+
+<div>
+    <h4>StudentProfil</h4>
+    <hr />
+    <dl class="row">
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.Rang)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.Rang)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.Biografija)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.Biografija)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.Vjestine)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.Vjestine)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.Projekti)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.Projekti)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.PreferiraneLokacije)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.PreferiraneLokacije)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.PreferiraneTehnologije)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.PreferiraneTehnologije)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.DostupanOd)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.DostupanOd)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.DatumAzuriranja)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.DatumAzuriranja)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.StatusVerifikacije)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.StatusVerifikacije)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.Student)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.Student.Id)
+        </dd>
+    </dl>
+</div>
+<div>
+    <a asp-action="Edit" asp-route-id="@Model?.Id">Edit</a> |
+    <a asp-action="Index">Back to List</a>
+</div>

@@ -1,0 +1,107 @@
+﻿@model IEnumerable<ETFTalentProgram.Models.Oglas>
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<h1>Index</h1>
+
+<p>
+    <a asp-action="Create">Create New</a>
+</p>
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.Naslov)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Opis)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Tehnologije)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.RokPrijave)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.DatumObjave)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.TipOglasa)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.TipAngazmana)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.StatusOglasa)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Lokacija)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.MinRang)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.MinProsjek)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Kompenzacija)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Firma)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model) {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.Naslov)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Opis)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Tehnologije)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.RokPrijave)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.DatumObjave)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.TipOglasa)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.TipAngazmana)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.StatusOglasa)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Lokacija)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.MinRang)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.MinProsjek)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Kompenzacija)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Firma.Id)
+            </td>
+            <td>
+                <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
+                <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
+                <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
+            </td>
+        </tr>
+}
+    </tbody>
+</table>

@@ -1,0 +1,59 @@
+﻿@model ETFTalentProgram.Models.RangParametri
+
+@{
+    ViewData["Title"] = "Edit";
+}
+
+<h1>Edit</h1>
+
+<h4>RangParametri</h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="Edit">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <input type="hidden" asp-for="Id" />
+            <div class="form-group">
+                <label asp-for="TezinaProsjecneOcjene" class="control-label"></label>
+                <input asp-for="TezinaProsjecneOcjene" class="form-control" />
+                <span asp-validation-for="TezinaProsjecneOcjene" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="TezinaECTS" class="control-label"></label>
+                <input asp-for="TezinaECTS" class="form-control" />
+                <span asp-validation-for="TezinaECTS" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="TezinaBrojVjestina" class="control-label"></label>
+                <input asp-for="TezinaBrojVjestina" class="form-control" />
+                <span asp-validation-for="TezinaBrojVjestina" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="TezinaBrojProjekata" class="control-label"></label>
+                <input asp-for="TezinaBrojProjekata" class="form-control" />
+                <span asp-validation-for="TezinaBrojProjekata" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Verzija" class="control-label"></label>
+                <input asp-for="Verzija" class="form-control" />
+                <span asp-validation-for="Verzija" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="DatumPrimjene" class="control-label"></label>
+                <input asp-for="DatumPrimjene" class="form-control" />
+                <span asp-validation-for="DatumPrimjene" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Save" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-action="Index">Back to List</a>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

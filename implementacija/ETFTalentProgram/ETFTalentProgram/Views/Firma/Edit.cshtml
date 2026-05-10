@@ -1,0 +1,99 @@
+﻿@model ETFTalentProgram.Models.Firma
+
+@{
+    ViewData["Title"] = "Edit";
+}
+
+<h1>Edit</h1>
+
+<h4>Firma</h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="Edit">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div class="form-group">
+                <label asp-for="Naziv" class="control-label"></label>
+                <input asp-for="Naziv" class="form-control" />
+                <span asp-validation-for="Naziv" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="OpisFirme" class="control-label"></label>
+                <input asp-for="OpisFirme" class="form-control" />
+                <span asp-validation-for="OpisFirme" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Lokacija" class="control-label"></label>
+                <input asp-for="Lokacija" class="form-control" />
+                <span asp-validation-for="Lokacija" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Website" class="control-label"></label>
+                <input asp-for="Website" class="form-control" />
+                <span asp-validation-for="Website" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="KontaktEmail" class="control-label"></label>
+                <input asp-for="KontaktEmail" class="form-control" />
+                <span asp-validation-for="KontaktEmail" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="IndustrijskiSektor" class="control-label"></label>
+                <input asp-for="IndustrijskiSektor" class="form-control" />
+                <span asp-validation-for="IndustrijskiSektor" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="VelicinaFirme" class="control-label"></label>
+                <select asp-for="VelicinaFirme" class="form-control"></select>
+                <span asp-validation-for="VelicinaFirme" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="GodinaOsnivanja" class="control-label"></label>
+                <input asp-for="GodinaOsnivanja" class="form-control" />
+                <span asp-validation-for="GodinaOsnivanja" class="text-danger"></span>
+            </div>
+            <input type="hidden" asp-for="Id" />
+            <div class="form-group">
+                <label asp-for="Email" class="control-label"></label>
+                <input asp-for="Email" class="form-control" />
+                <span asp-validation-for="Email" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Lozinka" class="control-label"></label>
+                <input asp-for="Lozinka" class="form-control" />
+                <span asp-validation-for="Lozinka" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Uloga" class="control-label"></label>
+                <select asp-for="Uloga" class="form-control"></select>
+                <span asp-validation-for="Uloga" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Status" class="control-label"></label>
+                <select asp-for="Status" class="form-control"></select>
+                <span asp-validation-for="Status" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="DatumRegistracije" class="control-label"></label>
+                <input asp-for="DatumRegistracije" class="form-control" />
+                <span asp-validation-for="DatumRegistracije" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="DatumZadnjePrijave" class="control-label"></label>
+                <input asp-for="DatumZadnjePrijave" class="form-control" />
+                <span asp-validation-for="DatumZadnjePrijave" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Save" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-action="Index">Back to List</a>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

@@ -1,0 +1,65 @@
+﻿@model IEnumerable<ETFTalentProgram.Models.RangParametri>
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<h1>Index</h1>
+
+<p>
+    <a asp-action="Create">Create New</a>
+</p>
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.TezinaProsjecneOcjene)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.TezinaECTS)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.TezinaBrojVjestina)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.TezinaBrojProjekata)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Verzija)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.DatumPrimjene)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model) {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.TezinaProsjecneOcjene)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.TezinaECTS)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.TezinaBrojVjestina)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.TezinaBrojProjekata)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Verzija)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.DatumPrimjene)
+            </td>
+            <td>
+                <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
+                <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
+                <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
+            </td>
+        </tr>
+}
+    </tbody>
+</table>

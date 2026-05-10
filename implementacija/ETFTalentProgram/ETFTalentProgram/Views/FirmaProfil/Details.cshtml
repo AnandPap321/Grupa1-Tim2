@@ -1,0 +1,72 @@
+﻿@model ETFTalentProgram.Models.FirmaProfil
+
+@{
+    ViewData["Title"] = "Details";
+}
+
+<h1>Details</h1>
+
+<div>
+    <h4>FirmaProfil</h4>
+    <hr />
+    <dl class="row">
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.KratakOpis)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.KratakOpis)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.PunOpis)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.PunOpis)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.Lokacija)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.Lokacija)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.Website)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.Website)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.KontaktEmail)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.KontaktEmail)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.Logotip)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.Logotip)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.TehnologijeStack)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.TehnologijeStack)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.DatumAzuriranja)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.DatumAzuriranja)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.Firma)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.Firma.Id)
+        </dd>
+    </dl>
+</div>
+<div>
+    <a asp-action="Edit" asp-route-id="@Model?.Id">Edit</a> |
+    <a asp-action="Index">Back to List</a>
+</div>
