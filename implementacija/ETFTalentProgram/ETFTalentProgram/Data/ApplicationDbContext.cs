@@ -4,12 +4,11 @@ using ETFTalentProgram.Models;
 
 namespace ETFTalentProgram.Data
 {
-    public class ApplicationDbContext : IdentityDbContext
+    public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     {
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
             : base(options) { }
 
-        public DbSet<Korisnik> Korisnici { get; set; }
         public DbSet<Student> Studenti { get; set; }
         public DbSet<Firma> Firme { get; set; }
         public DbSet<Referent> Referenti { get; set; }
@@ -27,7 +26,6 @@ namespace ETFTalentProgram.Data
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<Korisnik>().ToTable("Korisnici");
             modelBuilder.Entity<Student>().ToTable("Studenti");
             modelBuilder.Entity<Firma>().ToTable("Firme");
             modelBuilder.Entity<Referent>().ToTable("Referenti");
@@ -48,7 +46,7 @@ namespace ETFTalentProgram.Data
                 entity.HasOne(p => p.Student)
                     .WithMany()
                     .HasForeignKey(p => p.StudentId)
-                    .OnDelete(DeleteBehavior.NoAction); 
+                    .OnDelete(DeleteBehavior.NoAction);
 
                 entity.HasOne(p => p.Oglas)
                     .WithMany()
@@ -70,7 +68,5 @@ namespace ETFTalentProgram.Data
 
             base.OnModelCreating(modelBuilder);
         }
-
-
     }
 }

@@ -49,8 +49,8 @@ namespace ETFTalentProgram.Controllers
         // GET: Ponuda/Create
         public IActionResult Create()
         {
-            ViewData["PosiljalacId"] = new SelectList(_context.Korisnici, "Id", "Id");
-            ViewData["PrimalacId"] = new SelectList(_context.Korisnici, "Id", "Id");
+            ViewData["PosiljalacId"] = new SelectList(_context.Users, "Id", "Id");
+            ViewData["PrimalacId"] = new SelectList(_context.Users, "Id", "Id");
             return View();
         }
 
@@ -67,8 +67,8 @@ namespace ETFTalentProgram.Controllers
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["PosiljalacId"] = new SelectList(_context.Korisnici, "Id", "Id", ponuda.PosiljalacId);
-            ViewData["PrimalacId"] = new SelectList(_context.Korisnici, "Id", "Id", ponuda.PrimalacId);
+            ViewData["PosiljalacId"] = new SelectList(_context.Users, "Id", "Id", ponuda.PosiljalacId);
+            ViewData["PrimalacId"] = new SelectList(_context.Users, "Id", "Id", ponuda.PrimalacId);
             return View(ponuda);
         }
 
@@ -85,8 +85,8 @@ namespace ETFTalentProgram.Controllers
             {
                 return NotFound();
             }
-            ViewData["PosiljalacId"] = new SelectList(_context.Korisnici, "Id", "Id", ponuda.PosiljalacId);
-            ViewData["PrimalacId"] = new SelectList(_context.Korisnici, "Id", "Id", ponuda.PrimalacId);
+            ViewData["PosiljalacId"] = new SelectList(_context.Users, "Id", "Id", ponuda.PosiljalacId);
+            ViewData["PrimalacId"] = new SelectList(_context.Users, "Id", "Id", ponuda.PrimalacId);
             return View(ponuda);
         }
 
@@ -122,8 +122,8 @@ namespace ETFTalentProgram.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["PosiljalacId"] = new SelectList(_context.Korisnici, "Id", "Id", ponuda.PosiljalacId);
-            ViewData["PrimalacId"] = new SelectList(_context.Korisnici, "Id", "Id", ponuda.PrimalacId);
+            ViewData["PosiljalacId"] = new SelectList(_context.Users, "Id", "Id", ponuda.PosiljalacId);
+            ViewData["PrimalacId"] = new SelectList(_context.Users, "Id", "Id", ponuda.PrimalacId);
             return View(ponuda);
         }
 
