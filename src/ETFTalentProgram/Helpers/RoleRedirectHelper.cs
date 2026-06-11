@@ -16,7 +16,7 @@ namespace ETFTalentProgram.Helpers
                 return "/FirmaProfil";
 
             if (roles.Contains(AppRoles.Student))
-                return "/StudentProfil";
+                return "/Student";
 
             return null;
         }
