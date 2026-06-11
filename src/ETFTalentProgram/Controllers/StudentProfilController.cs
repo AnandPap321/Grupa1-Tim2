@@ -1,15 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using ETFTalentProgram.Constants;
+using ETFTalentProgram.Data;
+using ETFTalentProgram.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
-using ETFTalentProgram.Data;
-using ETFTalentProgram.Models;
 
 namespace ETFTalentProgram.Controllers
 {
+    [Authorize(Roles = AppRoles.Student)]
     public class StudentProfilController : Controller
     {
         private readonly ApplicationDbContext _context;

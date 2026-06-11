@@ -1,15 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using ETFTalentProgram.Constants;
+using ETFTalentProgram.Data;
+using ETFTalentProgram.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
-using ETFTalentProgram.Data;
-using ETFTalentProgram.Models;
 
 namespace ETFTalentProgram.Controllers
 {
+    [Authorize(Roles = AppRoles.Referent)]
     public class VerifikacijaController : Controller
     {
         private readonly ApplicationDbContext _context;
@@ -19,11 +18,17 @@ namespace ETFTalentProgram.Controllers
             _context = context;
         }
 
+        // GET: Verifikacija/Lista
+        public async Task<IActionResult> Lista()
+        {
+            var applicationDbContext = _context.Verifikacije.Include(v => v.Referent).Include(v => v.Student);
+            return View("Index", await applicationDbContext.ToListAsync());
+        }
+
         // GET: Verifikacija
         public async Task<IActionResult> Index()
         {
-            var applicationDbContext = _context.Verifikacije.Include(v => v.Referent).Include(v => v.Student);
-            return View(await applicationDbContext.ToListAsync());
+            return await Lista();
         }
 
         // GET: Verifikacija/Details/5
