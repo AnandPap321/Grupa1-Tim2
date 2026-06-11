@@ -1,89 +1,165 @@
-﻿@model IEnumerable<ETFTalentProgram.Models.StudentProfil>
+@model ETFTalentProgram.ViewModels.StudentProfilViewModel
 
 @{
-    ViewData["Title"] = "Index";
+    ViewData["Title"] = "Moj profil";
 }
 
-<h1>Index</h1>
+<div class="mx-auto mb-5" style="max-width: 920px;">
+    <div class="d-flex flex-column flex-md-row justify-content-between gap-3 my-4">
+        <div>
+            <p class="text-muted mb-1">ETF Talent Program</p>
+            <h1 class="fw-bold mb-0">Moj profil</h1>
+        </div>
+        <div class="d-flex align-items-center gap-3">
+            <span class="d-inline-flex align-items-center justify-content-center rounded-circle bg-primary text-white fw-bold" style="width: 40px; height: 40px;">@Model.Inicijali</span>
+            <div>
+                <strong class="d-block">@(string.IsNullOrWhiteSpace(Model.PunoIme) ? "Student" : Model.PunoIme)</strong>
+                <span class="text-muted">Student - @(Model.GodinaStudija == 0 ? "godina nije unesena" : $"{Model.GodinaStudija}. godina")</span>
+            </div>
+        </div>
+    </div>
 
-<p>
-    <a asp-action="Create">Create New</a>
-</p>
-<table class="table">
-    <thead>
-        <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.Rang)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Biografija)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Vjestine)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Projekti)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.PreferiraneLokacije)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.PreferiraneTehnologije)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.DostupanOd)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.DatumAzuriranja)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.StatusVerifikacije)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Student)
-            </th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-@foreach (var item in Model) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.Rang)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Biografija)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Vjestine)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Projekti)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.PreferiraneLokacije)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.PreferiraneTehnologije)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.DostupanOd)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.DatumAzuriranja)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.StatusVerifikacije)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Student.Id)
-            </td>
-            <td>
-                <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
-            </td>
-        </tr>
+    @if (TempData["StatusMessage"] is string message)
+    {
+        <div class="alert alert-success">@message</div>
+    }
+
+    <form asp-action="Update" method="post" class="d-grid gap-4">
+        <input type="hidden" asp-for="Id" />
+        <input type="hidden" asp-for="StudentId" />
+
+        <section class="card">
+            <div class="card-body">
+                <h2 class="h5 fw-bold">Osnovne informacije</h2>
+                <p class="text-muted">Vaši osnovni podaci i kontakt informacije</p>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Ime</label>
+                        <input class="form-control" value="@Model.Ime" disabled />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Prezime</label>
+                        <input class="form-control" value="@Model.Prezime" disabled />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Broj indeksa</label>
+                        <input class="form-control" value="@Model.BrojIndeksa" disabled />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Godina studija</label>
+                        <input class="form-control" value="@(Model.GodinaStudija == 0 ? "" : $"{Model.GodinaStudija}. godina")" disabled />
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label fw-semibold">Email</label>
+                        <input class="form-control" value="@Model.Email" disabled />
+                    </div>
+                </div>
+                <p class="text-muted mt-3 mb-0">Osnovne informacije se ne mogu mijenjati. Kontaktirajte studentsku službu za izmjene.</p>
+            </div>
+        </section>
+
+        <section class="card">
+            <div class="card-body">
+                <h2 class="h5 fw-bold">Akademski podaci</h2>
+                <p class="text-muted">Vaš akademski uspjeh i rang</p>
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <label class="form-label fw-semibold">Prosječna ocjena</label>
+                        <input class="form-control" value="@Model.ProsjekOcjena.ToString("0.##")" disabled />
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-semibold">ECTS bodova</label>
+                        <input class="form-control" value="@Model.EctsBodovi" disabled />
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-semibold">Rang</label>
+                        <input class="form-control fw-bold text-primary" value="@Model.Rang.ToString("0.0")/10" disabled />
+                    </div>
+                </div>
+                <div class="alert alert-primary mt-3 mb-0">
+                    Vaš rang se automatski izračunava na osnovu ocjena, projekata i vještina. Ažurira se svaki put kada izmijenite profil.
+                </div>
+            </div>
+        </section>
+
+        <section class="card">
+            <div class="card-body">
+                <h2 class="h5 fw-bold">Biografija</h2>
+                <p class="text-muted">Kratko predstavite sebe poslodavcima</p>
+                <textarea asp-for="Biografija" class="form-control" rows="4" placeholder="Npr. Student treće godine softverskog inženjerstva sa interesom za web development."></textarea>
+            </div>
+        </section>
+
+        <section class="card">
+            <div class="card-body">
+                <h2 class="h5 fw-bold">Vještine i tehnologije</h2>
+                <p class="text-muted">Programski jezici, framework-ovi i alati koje poznajete</p>
+                <div class="d-flex flex-wrap gap-2 mb-3">
+                    @foreach (var vjestina in Model.VjestineLista)
+                    {
+                        <span class="badge text-bg-light border">@vjestina</span>
+                    }
+                </div>
+                <input asp-for="Vjestine" class="form-control" placeholder="React, TypeScript, Node.js, PostgreSQL" />
+                <span asp-validation-for="Vjestine" class="text-danger"></span>
+            </div>
+        </section>
+
+        <section class="card">
+            <div class="card-body">
+                <h2 class="h5 fw-bold">Projekti</h2>
+                <p class="text-muted">Vaši lični i akademski projekti</p>
+                <div class="d-grid gap-3">
+                    @foreach (var projekat in Model.ProjektiLista)
+                    {
+                        <article class="border rounded p-3">
+                            <strong class="d-block">@projekat.Naziv</strong>
+                            @if (!string.IsNullOrWhiteSpace(projekat.Opis))
+                            {
+                                <span class="d-block text-muted mt-1">@projekat.Opis</span>
+                            }
+                            <div class="d-flex flex-wrap gap-2 mt-2">
+                                @foreach (var tehnologija in projekat.Tehnologije)
+                                {
+                                    <span class="badge text-bg-light border">@tehnologija</span>
+                                }
+                            </div>
+                        </article>
+                    }
+                </div>
+                <label class="form-label fw-semibold mt-3">Projekti</label>
+                <textarea asp-for="Projekti" class="form-control" rows="5" placeholder="E-commerce platforma | Full-stack web aplikacija | React, Node.js, MongoDB"></textarea>
+                <div class="form-text">Unesite svaki projekat u novi red u formatu: Naziv | Opis | Tehnologije.</div>
+                <span asp-validation-for="Projekti" class="text-danger"></span>
+            </div>
+        </section>
+
+        <section class="card">
+            <div class="card-body">
+                <h2 class="h5 fw-bold">Preferencije</h2>
+                <p class="text-muted">Željena lokacija i dostupnost</p>
+                <label class="form-label fw-semibold">Preferirane lokacije</label>
+                <div class="d-flex flex-wrap gap-2 mb-3">
+                    @foreach (var lokacija in Model.LokacijeLista)
+                    {
+                        <span class="badge text-bg-light border">@lokacija</span>
+                    }
+                </div>
+                <input asp-for="PreferiraneLokacije" class="form-control" placeholder="Sarajevo, Remote" />
+                <span asp-validation-for="PreferiraneLokacije" class="text-danger"></span>
+
+                <label class="form-label fw-semibold mt-3">Dostupan od</label>
+                <input asp-for="DostupanOd" type="date" class="form-control" />
+                <span asp-validation-for="DostupanOd" class="text-danger"></span>
+            </div>
+        </section>
+
+        <div class="d-flex justify-content-end">
+            <button type="submit" class="btn btn-primary">Sačuvaj izmjene</button>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
 }
-    </tbody>
-</table>

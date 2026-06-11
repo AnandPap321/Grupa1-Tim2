@@ -1,78 +1,120 @@
-﻿@model ETFTalentProgram.Models.StudentProfil
+@model ETFTalentProgram.ViewModels.StudentProfilViewModel
 
 @{
-    ViewData["Title"] = "Details";
+    ViewData["Title"] = "Profil studenta";
 }
 
-<h1>Details</h1>
+<div class="mx-auto mb-5" style="max-width: 920px;">
+    <a asp-action="Search" class="btn btn-link text-decoration-none px-0 my-3">Nazad na pretragu</a>
 
-<div>
-    <h4>StudentProfil</h4>
-    <hr />
-    <dl class="row">
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Rang)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Rang)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Biografija)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Biografija)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Vjestine)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Vjestine)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Projekti)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Projekti)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.PreferiraneLokacije)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.PreferiraneLokacije)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.PreferiraneTehnologije)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.PreferiraneTehnologije)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.DostupanOd)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.DostupanOd)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.DatumAzuriranja)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.DatumAzuriranja)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.StatusVerifikacije)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.StatusVerifikacije)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Student)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Student.Id)
-        </dd>
-    </dl>
-</div>
-<div>
-    <a asp-action="Edit" asp-route-id="@Model?.Id">Edit</a> |
-    <a asp-action="Index">Back to List</a>
+    <section class="card mb-4">
+        <div class="card-body d-flex flex-column flex-md-row align-items-md-center gap-4">
+            <span class="d-inline-flex align-items-center justify-content-center rounded-circle bg-primary text-white fw-bold fs-3 flex-shrink-0" style="width: 88px; height: 88px;">@Model.Inicijali</span>
+            <div class="flex-grow-1">
+                <h1 class="fw-bold mb-1">@(string.IsNullOrWhiteSpace(Model.PunoIme) ? "Student" : Model.PunoIme)</h1>
+                <p class="text-muted mb-2">@(Model.GodinaStudija == 0 ? "Godina studija nije unesena" : $"{Model.GodinaStudija}. godina")</p>
+                <div class="d-flex flex-wrap gap-3 text-muted mb-2">
+                    <span>@Model.Email</span>
+                    <span>Broj indeksa: @(string.IsNullOrWhiteSpace(Model.BrojIndeksa) ? "-" : Model.BrojIndeksa)</span>
+                </div>
+                <div class="d-flex flex-wrap gap-2">
+                    @foreach (var lokacija in Model.LokacijeLista)
+                    {
+                        <span class="badge text-bg-light border">@lokacija</span>
+                    }
+                </div>
+            </div>
+            @if (Model.CanSendOffer)
+            {
+                <a asp-controller="Ponuda" asp-action="Create" asp-route-primalacId="@Model.StudentId" class="btn btn-primary">Pošalji ponudu</a>
+            }
+        </div>
+    </section>
+
+    <div class="row g-3 mb-4">
+        <div class="col-sm-6 col-lg-3">
+            <div class="card h-100">
+                <div class="card-body">
+                    <span class="text-muted">Rang</span>
+                    <strong class="d-block fs-3 text-primary mt-3">@Model.Rang.ToString("0.0")/10</strong>
+                    <small class="text-muted">Top kandidati</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6 col-lg-3">
+            <div class="card h-100">
+                <div class="card-body">
+                    <span class="text-muted">Prosječna ocjena</span>
+                    <strong class="d-block fs-3 text-primary mt-3">@Model.ProsjekOcjena.ToString("0.##")</strong>
+                    <small class="text-muted">@Model.EctsBodovi ECTS bodova</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6 col-lg-3">
+            <div class="card h-100">
+                <div class="card-body">
+                    <span class="text-muted">Vještine</span>
+                    <strong class="d-block fs-3 text-primary mt-3">@Model.BrojVjestina</strong>
+                    <small class="text-muted">Tehnologije</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6 col-lg-3">
+            <div class="card h-100">
+                <div class="card-body">
+                    <span class="text-muted">Projekti</span>
+                    <strong class="d-block fs-3 text-primary mt-3">@Model.BrojProjekata</strong>
+                    <small class="text-muted">Realizovano</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <section class="card mb-4">
+        <div class="card-body">
+            <h2 class="h5 fw-bold">O studentu</h2>
+            <p class="mb-0 mt-3">@(string.IsNullOrWhiteSpace(Model.Biografija) ? "Student još nije dodao biografiju." : Model.Biografija)</p>
+        </div>
+    </section>
+
+    <section class="card mb-4">
+        <div class="card-body">
+            <h2 class="h5 fw-bold">Vještine i tehnologije</h2>
+            <p class="text-muted">Poznavanje programskih jezika, framework-ova i alata</p>
+            <div class="d-flex flex-wrap gap-2">
+                @foreach (var vjestina in Model.VjestineLista)
+                {
+                    <span class="badge text-bg-light border">@vjestina</span>
+                }
+            </div>
+        </div>
+    </section>
+
+    <section class="card">
+        <div class="card-body">
+            <h2 class="h5 fw-bold">Projekti</h2>
+            <div class="d-grid gap-3 mt-3">
+                @if (Model.ProjektiLista.Count == 0)
+                {
+                    <p class="text-muted mb-0">Student još nije dodao projekte.</p>
+                }
+                @foreach (var projekat in Model.ProjektiLista)
+                {
+                    <article class="border rounded p-3">
+                        <strong class="d-block">@projekat.Naziv</strong>
+                        @if (!string.IsNullOrWhiteSpace(projekat.Opis))
+                        {
+                            <span class="d-block text-muted mt-1">@projekat.Opis</span>
+                        }
+                        <div class="d-flex flex-wrap gap-2 mt-2">
+                            @foreach (var tehnologija in projekat.Tehnologije)
+                            {
+                                <span class="badge text-bg-light border">@tehnologija</span>
+                            }
+                        </div>
+                    </article>
+                }
+            </div>
+        </div>
+    </section>
 </div>
