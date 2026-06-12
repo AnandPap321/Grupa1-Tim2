@@ -153,5 +153,88 @@ namespace ETFTalentProgram.Controllers
         {
             return _context.Firme.Any(e => e.Id == id);
         }
+
+        // GET: Firma/Profil_firme
+        public async Task<IActionResult> Profil_firme()
+        {
+            var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId))
+            {
+                return NotFound();
+            }
+
+            var firma = await _context.Firme.FirstOrDefaultAsync(f => f.Email == User.Identity.Name);
+            if (firma == null)
+            {
+                return NotFound();
+            }
+
+            var firmaProfil = await _context.FirmaProfili.FirstOrDefaultAsync(f => f.FirmaId == firma.Id);
+            if (firmaProfil == null)
+            {
+                return NotFound();
+            }
+
+            ViewData["FirmaId"] = new SelectList(_context.Firme, "Id", "Id", firmaProfil.FirmaId);
+            return View(firmaProfil);
+        }
+
+        // POST: Firma/Profil_firme
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Profil_firme([Bind("Id,KratakOpis,PunOpis,Lokacija,Website,KontaktEmail,Logotip,TehnologijeStack,DatumAzuriranja,FirmaId")] FirmaProfil firmaProfil)
+        {
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    _context.Update(firmaProfil);
+                    await _context.SaveChangesAsync();
+                    TempData["StatusMessage"] = "Profil je uspješno ažuriran.";
+                    return RedirectToAction(nameof(Profil_firme));
+                }
+                catch (DbUpdateConcurrencyException)
+                {
+                    if (!FirmaProfilExists(firmaProfil.Id))
+                    {
+                        return NotFound();
+                    }
+                    else
+                    {
+                        throw;
+                    }
+                }
+            }
+            ViewData["FirmaId"] = new SelectList(_context.Firme, "Id", "Id", firmaProfil.FirmaId);
+            return View(firmaProfil);
+        }
+
+        private bool FirmaProfilExists(long id)
+        {
+            return _context.FirmaProfili.Any(e => e.Id == id);
+        }
+
+        // GET: Firma/Objavi_oglas
+        public IActionResult Objavi_oglas()
+        {
+            ViewData["FirmaId"] = new SelectList(_context.Firme, "Id", "Id");
+            return View();
+        }
+
+        // POST: Firma/Objavi_oglas
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Objavi_oglas([Bind("Id,Naslov,Opis,Tehnologije,RokPrijave,DatumObjave,TipOglasa,TipAngazmana,StatusOglasa,Lokacija,MinRang,MinProsjek,Kompenzacija,FirmaId")] Oglas oglas)
+        {
+            if (ModelState.IsValid)
+            {
+                _context.Add(oglas);
+                await _context.SaveChangesAsync();
+                TempData["StatusMessage"] = "Oglas je uspješno objavljen.";
+                return RedirectToAction(nameof(Objavi_oglas));
+            }
+            ViewData["FirmaId"] = new SelectList(_context.Firme, "Id", "Id", oglas.FirmaId);
+            return View(oglas);
+        }
     }
 }

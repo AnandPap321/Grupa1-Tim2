@@ -1,0 +1,33 @@
+@{
+    var currentController = ViewContext.RouteData.Values["controller"]?.ToString() ?? "";
+    var currentAction = ViewContext.RouteData.Values["action"]?.ToString() ?? "";
+
+    var isProfilActive = currentController == "Firma" && currentAction == "Profil_firme";
+    var isOglasActive = currentController == "Firma" && currentAction == "Objavi_oglas";
+}
+
+<div class="mx-auto mb-5" style="max-width: 920px;">
+    <div class="d-flex flex-column flex-md-row justify-content-between gap-3 my-4">
+        <div>
+            <p class="text-muted mb-1">ETF Talent Program</p>
+            <h1 class="fw-bold mb-0">Firma Dashboard</h1>
+        </div>
+    </div>
+
+    <ul class="nav nav-tabs border-bottom mb-4" role="tablist">
+        <li class="nav-item" role="presentation">
+            <a class="nav-link @(isProfilActive ? "active" : "")"
+               href="@Url.Action("Profil_firme", "Firma")"
+               role="tab">
+                <i class="bi bi-person"></i> Profil firme
+            </a>
+        </li>
+        <li class="nav-item" role="presentation">
+            <a class="nav-link @(isOglasActive ? "active" : "")"
+               href="@Url.Action("Objavi_oglas", "Firma")"
+               role="tab">
+                <i class="bi bi-megaphone"></i> Objavi oglas
+            </a>
+        </li>
+    </ul>
+</div>

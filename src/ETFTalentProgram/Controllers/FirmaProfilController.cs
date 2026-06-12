@@ -68,41 +68,44 @@ namespace ETFTalentProgram.Controllers
             return View(firmaProfil);
         }
 
-        // GET: FirmaProfil/Edit/5
-        public async Task<IActionResult> Edit(long? id)
+        // GET: FirmaProfil/Edit - Gets current user's profile
+        public async Task<IActionResult> Edit()
         {
-            if (id == null)
+            var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId))
             {
                 return NotFound();
             }
 
-            var firmaProfil = await _context.FirmaProfili.FindAsync(id);
+            var firma = await _context.Firme.FirstOrDefaultAsync(f => f.Email == User.Identity.Name);
+            if (firma == null)
+            {
+                return NotFound();
+            }
+
+            var firmaProfil = await _context.FirmaProfili.FirstOrDefaultAsync(f => f.FirmaId == firma.Id);
             if (firmaProfil == null)
             {
                 return NotFound();
             }
+
             ViewData["FirmaId"] = new SelectList(_context.Firme, "Id", "Id", firmaProfil.FirmaId);
             return View(firmaProfil);
         }
 
-        // POST: FirmaProfil/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+        // POST: FirmaProfil/Edit
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(long id, [Bind("Id,KratakOpis,PunOpis,Lokacija,Website,KontaktEmail,Logotip,TehnologijeStack,DatumAzuriranja,FirmaId")] FirmaProfil firmaProfil)
+        public async Task<IActionResult> Edit([Bind("Id,KratakOpis,PunOpis,Lokacija,Website,KontaktEmail,Logotip,TehnologijeStack,DatumAzuriranja,FirmaId")] FirmaProfil firmaProfil)
         {
-            if (id != firmaProfil.Id)
-            {
-                return NotFound();
-            }
-
             if (ModelState.IsValid)
             {
                 try
                 {
                     _context.Update(firmaProfil);
                     await _context.SaveChangesAsync();
+                    TempData["StatusMessage"] = "Profil je uspješno ažuriran.";
+                    return RedirectToAction(nameof(Edit));
                 }
                 catch (DbUpdateConcurrencyException)
                 {
@@ -115,7 +118,6 @@ namespace ETFTalentProgram.Controllers
                         throw;
                     }
                 }
-                return RedirectToAction(nameof(Index));
             }
             ViewData["FirmaId"] = new SelectList(_context.Firme, "Id", "Id", firmaProfil.FirmaId);
             return View(firmaProfil);

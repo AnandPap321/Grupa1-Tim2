@@ -1,93 +1,131 @@
 ﻿@model ETFTalentProgram.Models.Oglas
 
 @{
-    ViewData["Title"] = "Edit";
+    ViewData["Title"] = "Uredi oglas";
 }
 
-<h1>Edit</h1>
+@await Html.PartialAsync("_FirmaNavigation")
 
-<h4>Oglas</h4>
-<hr />
-<div class="row">
-    <div class="col-md-4">
-        <form asp-action="Edit">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <input type="hidden" asp-for="Id" />
-            <div class="form-group">
-                <label asp-for="Naslov" class="control-label"></label>
-                <input asp-for="Naslov" class="form-control" />
-                <span asp-validation-for="Naslov" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Opis" class="control-label"></label>
-                <input asp-for="Opis" class="form-control" />
-                <span asp-validation-for="Opis" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Tehnologije" class="control-label"></label>
-                <input asp-for="Tehnologije" class="form-control" />
-                <span asp-validation-for="Tehnologije" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="RokPrijave" class="control-label"></label>
-                <input asp-for="RokPrijave" class="form-control" />
-                <span asp-validation-for="RokPrijave" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="DatumObjave" class="control-label"></label>
-                <input asp-for="DatumObjave" class="form-control" />
-                <span asp-validation-for="DatumObjave" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="TipOglasa" class="control-label"></label>
-                <select asp-for="TipOglasa" class="form-control"></select>
-                <span asp-validation-for="TipOglasa" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="TipAngazmana" class="control-label"></label>
-                <select asp-for="TipAngazmana" class="form-control"></select>
-                <span asp-validation-for="TipAngazmana" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="StatusOglasa" class="control-label"></label>
-                <select asp-for="StatusOglasa" class="form-control"></select>
-                <span asp-validation-for="StatusOglasa" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Lokacija" class="control-label"></label>
-                <input asp-for="Lokacija" class="form-control" />
-                <span asp-validation-for="Lokacija" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="MinRang" class="control-label"></label>
-                <input asp-for="MinRang" class="form-control" />
-                <span asp-validation-for="MinRang" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="MinProsjek" class="control-label"></label>
-                <input asp-for="MinProsjek" class="form-control" />
-                <span asp-validation-for="MinProsjek" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Kompenzacija" class="control-label"></label>
-                <input asp-for="Kompenzacija" class="form-control" />
-                <span asp-validation-for="Kompenzacija" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="FirmaId" class="control-label"></label>
-                <select asp-for="FirmaId" class="form-control" asp-items="ViewBag.FirmaId"></select>
-                <span asp-validation-for="FirmaId" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <input type="submit" value="Save" class="btn btn-primary" />
-            </div>
-        </form>
+<div class="mx-auto mb-5" style="max-width: 920px;">
+    <div class="card">
+        <div class="card-body">
+            <h2 class="h5 fw-bold mb-3">Uredi oglas</h2>
+            <p class="text-muted">Ažurirajte informacije o vašem oglasu</p>
+
+            <form asp-action="Edit" method="post" class="d-grid gap-4">
+                <input type="hidden" asp-for="Id" />
+
+                <section class="card">
+                    <div class="card-body">
+                        <h3 class="h6 fw-semibold mb-3">Osnovne informacije</h3>
+                        <div class="row g-3">
+                            <div class="col-12">
+                                <label asp-for="Naslov" class="form-label fw-semibold">Naziv pozicije *</label>
+                                <input asp-for="Naslov" class="form-control" placeholder="npr. Frontend Developer, Backend Praksa..." required />
+                                <span asp-validation-for="Naslov" class="text-danger"></span>
+                            </div>
+                            <div class="col-12">
+                                <label asp-for="Opis" class="form-label fw-semibold">Opis pozicije *</label>
+                                <textarea asp-for="Opis" class="form-control" rows="5" placeholder="Detaljniji opis o poziciji, odgovornostima i kvalifikacijama..." required></textarea>
+                                <span asp-validation-for="Opis" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="card">
+                    <div class="card-body">
+                        <h3 class="h6 fw-semibold mb-3">Tehnički zahtjevi</h3>
+                        <div class="row g-3">
+                            <div class="col-12">
+                                <label asp-for="Tehnologije" class="form-label fw-semibold">Tražene tehnologije *</label>
+                                <input asp-for="Tehnologije" class="form-control" placeholder="React, Node.js, PostgreSQL..." required />
+                                <span asp-validation-for="Tehnologije" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-6">
+                                <label asp-for="MinRang" class="form-label fw-semibold">Minimalni rang</label>
+                                <input asp-for="MinRang" type="number" step="0.1" class="form-control" placeholder="npr. 6.5" />
+                                <span asp-validation-for="MinRang" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-6">
+                                <label asp-for="MinProsjek" class="form-label fw-semibold">Minimalni prosjek</label>
+                                <input asp-for="MinProsjek" type="number" step="0.1" class="form-control" placeholder="npr. 3.5" />
+                                <span asp-validation-for="MinProsjek" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="card">
+                    <div class="card-body">
+                        <h3 class="h6 fw-semibold mb-3">Uvjeti angažmana</h3>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label asp-for="TipOglasa" class="form-label fw-semibold">Tip oglasa *</label>
+                                <select asp-for="TipOglasa" class="form-control" required></select>
+                                <span asp-validation-for="TipOglasa" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-6">
+                                <label asp-for="TipAngazmana" class="form-label fw-semibold">Tip angažmana *</label>
+                                <select asp-for="TipAngazmana" class="form-control" required></select>
+                                <span asp-validation-for="TipAngazmana" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-6">
+                                <label asp-for="Lokacija" class="form-label fw-semibold">Lokacija *</label>
+                                <input asp-for="Lokacija" class="form-control" placeholder="Sarajevo, Remote..." required />
+                                <span asp-validation-for="Lokacija" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-6">
+                                <label asp-for="Kompenzacija" class="form-label fw-semibold">Kompenzacija</label>
+                                <input asp-for="Kompenzacija" class="form-control" placeholder="npr. 1000-1500 KM" />
+                                <span asp-validation-for="Kompenzacija" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="card">
+                    <div class="card-body">
+                        <h3 class="h6 fw-semibold mb-3">Datumi i status</h3>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label asp-for="DatumObjave" class="form-label fw-semibold">Datum objave</label>
+                                <input asp-for="DatumObjave" type="date" class="form-control" />
+                                <span asp-validation-for="DatumObjave" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-6">
+                                <label asp-for="RokPrijave" class="form-label fw-semibold">Rok prijave</label>
+                                <input asp-for="RokPrijave" type="date" class="form-control" />
+                                <span asp-validation-for="RokPrijave" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-6">
+                                <label asp-for="StatusOglasa" class="form-label fw-semibold">Status oglasa</label>
+                                <select asp-for="StatusOglasa" class="form-control"></select>
+                                <span asp-validation-for="StatusOglasa" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-6">
+                                <label asp-for="FirmaId" class="form-label fw-semibold">Firma</label>
+                                <select asp-for="FirmaId" class="form-control" asp-items="ViewBag.FirmaId"></select>
+                                <span asp-validation-for="FirmaId" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+                <div class="d-flex justify-content-end gap-2">
+                    <a asp-action="Index" class="btn btn-outline-secondary">Otkaži</a>
+                    <button type="submit" class="btn btn-primary">Sačuvaj izmjene</button>
+                </div>
+            </form>
+        </div>
     </div>
 </div>
 
-<div>
-    <a asp-action="Index">Back to List</a>
-</div>
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
