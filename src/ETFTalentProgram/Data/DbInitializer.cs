@@ -87,6 +87,24 @@ namespace ETFTalentProgram.Data
                     await userManager.AddToRoleAsync(student, AppRoles.Student);
                 }
             }
+
+            const string referentEmail = "referent@etf.ba";
+            if (await userManager.FindByEmailAsync(referentEmail) == null)
+            {
+                var referent = new ApplicationUser
+                {
+                    UserName = referentEmail,
+                    Email = referentEmail,
+                    EmailConfirmed = true,
+                    DatumRegistracije = DateTime.UtcNow
+                };
+
+                var result = await userManager.CreateAsync(referent, "Referent123!");
+                if (result.Succeeded)
+                {
+                    await userManager.AddToRoleAsync(referent, AppRoles.Referent);
+                }
+            }
         }
     }
 }

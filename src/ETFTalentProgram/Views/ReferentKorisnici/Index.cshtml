@@ -1,0 +1,39 @@
+@model IEnumerable<ETFTalentProgram.ViewModels.UserManagementIndexViewModel>
+
+@{
+    ViewData["Title"] = "Korisnici sistema";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1>Korisnici sistema</h1>
+    <a class="btn btn-primary" asp-action="Create">Kreiraj korisnika</a>
+</div>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Email</th>
+            <th>Uloge</th>
+            <th>Email potvrden</th>
+            <th>Datum registracije</th>
+            <th>Zadnja prijava</th>
+            <th>Akcije</th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model)
+{
+        <tr>
+            <td>@item.Email</td>
+            <td>@item.Roles</td>
+            <td>@(item.EmailConfirmed ? "Da" : "Ne")</td>
+            <td>@item.DatumRegistracije.ToString("dd.MM.yyyy HH:mm")</td>
+            <td>@(item.DatumZadnjePrijave?.ToString("dd.MM.yyyy HH:mm") ?? "-")</td>
+            <td>
+                <a asp-action="Edit" asp-route-id="@item.Id">Uredi</a> |
+                <a asp-action="Delete" asp-route-id="@item.Id">Obrisi</a>
+            </td>
+        </tr>
+}
+    </tbody>
+</table>

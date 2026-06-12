@@ -10,7 +10,7 @@ namespace ETFTalentProgram.Helpers
                 return "/Admin/Dashboard";
 
             if (roles.Contains(AppRoles.Referent))
-                return "/Verifikacija/Lista";
+                return "/ReferentKorisnici";
 
             if (roles.Contains(AppRoles.Firma))
                 return "/FirmaProfil";

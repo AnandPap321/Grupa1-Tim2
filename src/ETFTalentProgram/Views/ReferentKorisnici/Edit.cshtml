@@ -1,0 +1,42 @@
+@model ETFTalentProgram.ViewModels.UserManagementEditViewModel
+
+@{
+    ViewData["Title"] = "Azuriranje korisnika";
+}
+
+<h1>Azuriranje korisnika</h1>
+
+<form asp-action="Edit" asp-route-id="@Model.Id" method="post">
+    <input type="hidden" asp-for="Id" />
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+    <div class="mb-3">
+        <label asp-for="Email" class="form-label"></label>
+        <input asp-for="Email" class="form-control" />
+        <span asp-validation-for="Email" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Role" class="form-label">Uloga</label>
+        <select asp-for="Role" asp-items="ViewBag.Roles" class="form-select"></select>
+        <span asp-validation-for="Role" class="text-danger"></span>
+    </div>
+
+    <div class="form-check mb-3">
+        <input asp-for="EmailConfirmed" class="form-check-input" />
+        <label asp-for="EmailConfirmed" class="form-check-label">Email potvrden</label>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="NewPassword" class="form-label">Nova lozinka</label>
+        <input asp-for="NewPassword" class="form-control" />
+        <span asp-validation-for="NewPassword" class="text-danger"></span>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Sacuvaj</button>
+    <a asp-action="Index" class="btn btn-secondary">Nazad</a>
+</form>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}
