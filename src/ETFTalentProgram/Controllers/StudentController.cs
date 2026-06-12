@@ -48,6 +48,21 @@ namespace ETFTalentProgram.Controllers
             return View(model);
         }
 
+        // GET: Student/MojePrijave
+        [Authorize(Roles = AppRoles.Student)]
+        public async Task<IActionResult> MojePrijave()
+        {
+            var student = await GetOrCreateCurrentStudentAsync();
+            var prijave = await _context.PrijaveOglasa
+                .Include(p => p.Oglas)
+                    .ThenInclude(o => o.Firma)
+                .Where(p => p.StudentId == student.Id)
+                .OrderByDescending(p => p.DatumPrijave)
+                .ToListAsync();
+
+            return View(prijave);
+        }
+
         // GET: Student/Details/5
         [Authorize(Roles = AppRoles.Referent)]
         public async Task<IActionResult> Details(long? id)

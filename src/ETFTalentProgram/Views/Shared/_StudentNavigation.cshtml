@@ -1,0 +1,49 @@
+@{
+    var currentController = ViewContext.RouteData.Values["controller"]?.ToString() ?? "";
+    var currentAction = ViewContext.RouteData.Values["action"]?.ToString() ?? "";
+
+    var isDashboardActive = currentController == "Student" && currentAction == "Index";
+    var isProfilActive = currentController == "StudentProfil" && currentAction == "Index";
+    var isPrijaveActive = currentController == "Student" && currentAction == "MojePrijave";
+    var isOglasiActive = currentController == "Oglas" && currentAction == "Index";
+}
+
+<div class="mx-auto mb-4" style="max-width: 1040px;">
+    <div class="d-flex flex-column flex-md-row justify-content-between gap-3 my-4">
+        <div>
+            <p class="text-muted mb-1">ETF Talent Program</p>
+            <h1 class="fw-bold mb-0">Student Dashboard</h1>
+        </div>
+    </div>
+
+    <ul class="nav nav-tabs border-bottom" role="tablist">
+        <li class="nav-item" role="presentation">
+            <a class="nav-link @(isDashboardActive ? "active" : "")"
+               href="@Url.Action("Index", "Student")"
+               role="tab">
+                Pocetna
+            </a>
+        </li>
+        <li class="nav-item" role="presentation">
+            <a class="nav-link @(isProfilActive ? "active" : "")"
+               href="@Url.Action("Index", "StudentProfil")"
+               role="tab">
+                Moj profil
+            </a>
+        </li>
+        <li class="nav-item" role="presentation">
+            <a class="nav-link @(isPrijaveActive ? "active" : "")"
+               href="@Url.Action("MojePrijave", "Student")"
+               role="tab">
+                Moje prijave
+            </a>
+        </li>
+        <li class="nav-item" role="presentation">
+            <a class="nav-link @(isOglasiActive ? "active" : "")"
+               href="@Url.Action("Index", "Oglas")"
+               role="tab">
+                Oglasi
+            </a>
+        </li>
+    </ul>
+</div>

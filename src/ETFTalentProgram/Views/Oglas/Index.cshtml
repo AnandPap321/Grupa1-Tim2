@@ -1,107 +1,153 @@
 ﻿@model IEnumerable<ETFTalentProgram.Models.Oglas>
 
 @{
-    ViewData["Title"] = "Index";
+    ViewData["Title"] = "Oglasi";
+    var appliedOglasIds = ViewData["AppliedOglasIds"] as HashSet<long> ?? new HashSet<long>();
 }
 
-<h1>Index</h1>
-
-<p>
-    <a asp-action="Create">Create New</a>
-</p>
-<table class="table">
-    <thead>
-        <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.Naslov)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Opis)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Tehnologije)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.RokPrijave)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.DatumObjave)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.TipOglasa)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.TipAngazmana)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.StatusOglasa)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Lokacija)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.MinRang)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.MinProsjek)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Kompenzacija)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Firma)
-            </th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-@foreach (var item in Model) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.Naslov)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Opis)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Tehnologije)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.RokPrijave)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.DatumObjave)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.TipOglasa)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.TipAngazmana)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.StatusOglasa)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Lokacija)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.MinRang)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.MinProsjek)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Kompenzacija)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Firma.Id)
-            </td>
-            <td>
-                <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
-            </td>
-        </tr>
+@if (User.IsInRole(ETFTalentProgram.Constants.AppRoles.Student))
+{
+    @await Html.PartialAsync("_StudentNavigation")
 }
-    </tbody>
-</table>
+
+<div class="mx-auto mb-5" style="max-width: 1040px;">
+    @if (TempData["StatusMessage"] is string message)
+    {
+        <div class="alert alert-info alert-dismissible fade show" role="alert">
+            @message
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <section class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3 mb-4">
+        <div>
+            <p class="text-muted mb-1">ETF Talent Program</p>
+            <h1 class="fw-bold mb-1">Oglasi</h1>
+            <p class="text-muted mb-0">Pregled aktivnih prilika za praksu, posao i studentski angazman.</p>
+        </div>
+        @if (!User.IsInRole(ETFTalentProgram.Constants.AppRoles.Student))
+        {
+            <a asp-action="Create" class="btn btn-primary">Kreiraj oglas</a>
+        }
+    </section>
+
+    @if (!Model.Any())
+    {
+        <section class="card border-0 shadow-sm">
+            <div class="card-body p-5 text-center">
+                <h2 class="h5 fw-bold">Trenutno nema oglasa</h2>
+                <p class="text-muted mb-0">Kada firma objavi oglas, pojavit ce se ovdje.</p>
+            </div>
+        </section>
+    }
+    else
+    {
+        <div class="d-grid gap-3">
+            @foreach (var oglas in Model)
+            {
+                var isApplied = appliedOglasIds.Contains(oglas.Id);
+                var isActive = oglas.StatusOglasa == ETFTalentProgram.Models.StatusOglasa.AKTIVAN;
+                var tehnologije = (oglas.Tehnologije ?? string.Empty)
+                    .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+                var statusClass = isActive ? "text-bg-success" : "text-bg-secondary";
+
+                <article class="card border-0 shadow-sm">
+                    <div class="card-body p-4">
+                        <div class="d-flex flex-column flex-lg-row justify-content-between gap-3">
+                            <div class="flex-grow-1">
+                                <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
+                                    <h2 class="h4 fw-bold mb-0">
+                                        <a asp-action="Details" asp-route-id="@oglas.Id" class="text-reset text-decoration-none">@oglas.Naslov</a>
+                                    </h2>
+                                    <span class="badge @statusClass">@oglas.StatusOglasa</span>
+                                    <span class="badge text-bg-light border">@oglas.TipOglasa</span>
+                                    <span class="badge text-bg-light border">@oglas.TipAngazmana.ToString().Replace("_", " ")</span>
+                                </div>
+
+                                <div class="text-muted mb-3">
+                                    @(oglas.Firma?.Naziv ?? "Firma") - @oglas.Lokacija
+                                </div>
+
+                                <p class="mb-3">@oglas.Opis</p>
+
+                                <div class="d-flex flex-wrap gap-2">
+                                    @foreach (var tehnologija in tehnologije)
+                                    {
+                                        <span class="badge rounded-pill text-bg-light border">@tehnologija</span>
+                                    }
+                                </div>
+                            </div>
+
+                            <aside class="border rounded p-3 flex-shrink-0" style="min-width: 240px;">
+                                <div class="d-grid gap-2">
+                                    <div>
+                                        <div class="text-muted small">Rok prijave</div>
+                                        <div class="fw-semibold">@oglas.RokPrijave.ToString("dd.MM.yyyy")</div>
+                                    </div>
+                                    <div>
+                                        <div class="text-muted small">Minimalni rang</div>
+                                        <div class="fw-semibold">@oglas.MinRang.ToString("0.0")</div>
+                                    </div>
+                                    <div>
+                                        <div class="text-muted small">Minimalni prosjek</div>
+                                        <div class="fw-semibold">@oglas.MinProsjek.ToString("0.0")</div>
+                                    </div>
+                                    @if (!string.IsNullOrWhiteSpace(oglas.Kompenzacija))
+                                    {
+                                        <div>
+                                            <div class="text-muted small">Kompenzacija</div>
+                                            <div class="fw-semibold">@oglas.Kompenzacija</div>
+                                        </div>
+                                    }
+                                </div>
+                            </aside>
+                        </div>
+
+                        <div class="border-top mt-4 pt-3">
+                            @if (User.IsInRole(ETFTalentProgram.Constants.AppRoles.Student))
+                            {
+                                if (isApplied)
+                                {
+                                    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2">
+                                        <span class="text-success fw-semibold">Vec ste se prijavili na ovaj oglas.</span>
+                                        <div class="d-flex gap-2">
+                                            <a class="btn btn-outline-secondary" asp-action="Details" asp-route-id="@oglas.Id">Detalji</a>
+                                            <a class="btn btn-outline-primary" asp-controller="Student" asp-action="MojePrijave">Moje prijave</a>
+                                        </div>
+                                    </div>
+                                }
+                                else if (isActive)
+                                {
+                                    <form asp-action="PrijaviSe" asp-route-id="@oglas.Id" method="post" class="row g-2 align-items-end">
+                                        <div class="col-md">
+                                            <label class="form-label fw-semibold">Kratka poruka uz prijavu</label>
+                                            <textarea name="propratniTekst" class="form-control" rows="2" placeholder="Napišite zašto ste zainteresovani za ovaj oglas..."></textarea>
+                                        </div>
+                                        <div class="col-md-auto d-grid gap-2">
+                                            <a class="btn btn-outline-secondary" asp-action="Details" asp-route-id="@oglas.Id">Detalji</a>
+                                            <button type="submit" class="btn btn-primary">Prijavi se</button>
+                                        </div>
+                                    </form>
+                                }
+                                else
+                                {
+                                    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2">
+                                        <span class="text-muted">Prijave na ovaj oglas trenutno nisu otvorene.</span>
+                                        <a class="btn btn-outline-secondary" asp-action="Details" asp-route-id="@oglas.Id">Detalji</a>
+                                    </div>
+                                }
+                            }
+                            else
+                            {
+                                <div class="d-flex flex-wrap gap-2">
+                                    <a asp-action="Details" asp-route-id="@oglas.Id" class="btn btn-outline-primary">Detalji</a>
+                                    <a asp-action="Edit" asp-route-id="@oglas.Id" class="btn btn-outline-secondary">Uredi</a>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </article>
+            }
+        </div>
+    }
+</div>

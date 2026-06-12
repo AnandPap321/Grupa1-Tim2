@@ -261,10 +261,13 @@ namespace ETFTalentProgram.Controllers
         [Authorize(Roles = AppRoles.Firma)]
         public async Task<IActionResult> Objavi_oglas([Bind("Id,Naslov,Opis,Tehnologije,RokPrijave,DatumObjave,TipOglasa,TipAngazmana,StatusOglasa,Lokacija,MinRang,MinProsjek,Kompenzacija,FirmaId")] Oglas oglas)
         {
+            var firma = await GetOrCreateCurrentFirmaAsync();
+            oglas.FirmaId = firma.Id;
+            oglas.Kompenzacija = oglas.Kompenzacija?.Trim() ?? string.Empty;
+            ModelState.Remove(nameof(Oglas.Firma));
+
             if (ModelState.IsValid)
             {
-                var firma = await GetOrCreateCurrentFirmaAsync();
-                oglas.FirmaId = firma.Id;
                 oglas.DatumObjave = oglas.DatumObjave == default ? DateTime.Today : oglas.DatumObjave;
                 oglas.RokPrijave = oglas.RokPrijave == default ? DateTime.Today.AddDays(30) : oglas.RokPrijave;
                 _context.Add(oglas);

@@ -1,96 +1,129 @@
 ﻿@model ETFTalentProgram.Models.Oglas
 
 @{
-    ViewData["Title"] = "Details";
+    ViewData["Title"] = Model.Naslov;
+    var isApplied = ViewData["IsApplied"] as bool? ?? false;
+    var isActive = Model.StatusOglasa == ETFTalentProgram.Models.StatusOglasa.AKTIVAN;
+    var tehnologije = (Model.Tehnologije ?? string.Empty)
+        .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+    var statusClass = isActive ? "text-bg-success" : "text-bg-secondary";
 }
 
-<h1>Details</h1>
+@if (User.IsInRole(ETFTalentProgram.Constants.AppRoles.Student))
+{
+    @await Html.PartialAsync("_StudentNavigation")
+}
 
-<div>
-    <h4>Oglas</h4>
-    <hr />
-    <dl class="row">
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Naslov)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Naslov)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Opis)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Opis)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Tehnologije)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Tehnologije)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.RokPrijave)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.RokPrijave)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.DatumObjave)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.DatumObjave)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.TipOglasa)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.TipOglasa)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.TipAngazmana)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.TipAngazmana)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.StatusOglasa)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.StatusOglasa)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Lokacija)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Lokacija)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.MinRang)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.MinRang)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.MinProsjek)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.MinProsjek)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Kompenzacija)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Kompenzacija)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Firma)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Firma.Id)
-        </dd>
-    </dl>
-</div>
-<div>
-    <a asp-action="Edit" asp-route-id="@Model?.Id">Edit</a> |
-    <a asp-action="Index">Back to List</a>
+<div class="mx-auto mb-5" style="max-width: 1040px;">
+    <div class="mb-4">
+        <a asp-action="Index" class="btn btn-link text-decoration-none px-0">Nazad na oglase</a>
+    </div>
+
+    <section class="card border-0 shadow-sm mb-4">
+        <div class="card-body p-4 p-lg-5">
+            <div class="d-flex flex-column flex-lg-row justify-content-between gap-4">
+                <div class="flex-grow-1">
+                    <div class="d-flex flex-wrap align-items-center gap-2 mb-3">
+                        <span class="badge @statusClass">@Model.StatusOglasa</span>
+                        <span class="badge text-bg-light border">@Model.TipOglasa</span>
+                        <span class="badge text-bg-light border">@Model.TipAngazmana.ToString().Replace("_", " ")</span>
+                    </div>
+
+                    <h1 class="fw-bold mb-2">@Model.Naslov</h1>
+                    <p class="text-muted mb-4">@(Model.Firma?.Naziv ?? "Firma") - @Model.Lokacija</p>
+
+                    <p class="lead mb-0">@Model.Opis</p>
+                </div>
+
+                <aside class="border rounded p-3 flex-shrink-0" style="min-width: 260px;">
+                    <div class="d-grid gap-3">
+                        <div>
+                            <div class="text-muted small">Rok prijave</div>
+                            <div class="fw-semibold">@Model.RokPrijave.ToString("dd.MM.yyyy")</div>
+                        </div>
+                        <div>
+                            <div class="text-muted small">Datum objave</div>
+                            <div class="fw-semibold">@Model.DatumObjave.ToString("dd.MM.yyyy")</div>
+                        </div>
+                        <div>
+                            <div class="text-muted small">Minimalni rang</div>
+                            <div class="fw-semibold">@Model.MinRang.ToString("0.0")</div>
+                        </div>
+                        <div>
+                            <div class="text-muted small">Minimalni prosjek</div>
+                            <div class="fw-semibold">@Model.MinProsjek.ToString("0.0")</div>
+                        </div>
+                        @if (!string.IsNullOrWhiteSpace(Model.Kompenzacija))
+                        {
+                            <div>
+                                <div class="text-muted small">Kompenzacija</div>
+                                <div class="fw-semibold">@Model.Kompenzacija</div>
+                            </div>
+                        }
+                    </div>
+                </aside>
+            </div>
+        </div>
+    </section>
+
+    <div class="row g-4">
+        <div class="col-lg-7">
+            <section class="card border-0 shadow-sm h-100">
+                <div class="card-body p-4">
+                    <h2 class="h5 fw-bold mb-3">Tehnologije</h2>
+                    @if (tehnologije.Length == 0)
+                    {
+                        <p class="text-muted mb-0">Tehnologije nisu navedene.</p>
+                    }
+                    else
+                    {
+                        <div class="d-flex flex-wrap gap-2">
+                            @foreach (var tehnologija in tehnologije)
+                            {
+                                <span class="badge rounded-pill text-bg-light border">@tehnologija</span>
+                            }
+                        </div>
+                    }
+                </div>
+            </section>
+        </div>
+
+        <div class="col-lg-5">
+            <section class="card border-0 shadow-sm h-100">
+                <div class="card-body p-4">
+                    <h2 class="h5 fw-bold mb-3">Prijava</h2>
+
+                    @if (User.IsInRole(ETFTalentProgram.Constants.AppRoles.Student))
+                    {
+                        if (isApplied)
+                        {
+                            <div class="alert alert-success mb-3">Vec ste se prijavili na ovaj oglas.</div>
+                            <a class="btn btn-outline-primary w-100" asp-controller="Student" asp-action="MojePrijave">Moje prijave</a>
+                        }
+                        else if (isActive)
+                        {
+                            <form asp-action="PrijaviSe" asp-route-id="@Model.Id" method="post" class="d-grid gap-3">
+                                <div>
+                                    <label class="form-label fw-semibold">Kratka poruka uz prijavu</label>
+                                    <textarea name="propratniTekst" class="form-control" rows="4" placeholder="Napišite zašto ste zainteresovani za ovaj oglas..."></textarea>
+                                </div>
+                                <button type="submit" class="btn btn-primary">Prijavi se</button>
+                            </form>
+                        }
+                        else
+                        {
+                            <p class="text-muted mb-0">Prijave na ovaj oglas trenutno nisu otvorene.</p>
+                        }
+                    }
+                    else
+                    {
+                        <div class="d-grid gap-2">
+                            <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-outline-secondary">Uredi oglas</a>
+                            <a asp-action="Index" class="btn btn-outline-primary">Svi oglasi</a>
+                        </div>
+                    }
+                </div>
+            </section>
+        </div>
+    </div>
 </div>

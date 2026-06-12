@@ -1,0 +1,110 @@
+@model IReadOnlyList<ETFTalentProgram.Models.PrijavaOglas>
+
+@{
+    ViewData["Title"] = "Moje prijave";
+
+    var ukupno = Model.Count;
+    var aktivne = Model.Count(p => p.StatusPrijave == ETFTalentProgram.Models.StatusPrijave.NOVA || p.StatusPrijave == ETFTalentProgram.Models.StatusPrijave.PREGLEDANA);
+    var prihvacene = Model.Count(p => p.StatusPrijave == ETFTalentProgram.Models.StatusPrijave.PRIHVACENA);
+}
+
+@await Html.PartialAsync("_StudentNavigation")
+
+<div class="mx-auto mb-5" style="max-width: 1040px;">
+    <section class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3 mb-4">
+        <div>
+            <h2 class="fw-bold mb-1">Moje prijave</h2>
+            <p class="text-muted mb-0">Pregled statusa prijava na oglase i rokova za koje ste aplicirali.</p>
+        </div>
+        <a class="btn btn-primary" asp-controller="Oglas" asp-action="Index">Pregledaj oglase</a>
+    </section>
+
+    <div class="row g-3 mb-4">
+        <div class="col-md-4">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="text-muted small">Ukupno prijava</div>
+                    <div class="h3 mb-0">@ukupno</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="text-muted small">U obradi</div>
+                    <div class="h3 mb-0">@aktivne</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="text-muted small">Prihvacene</div>
+                    <div class="h3 mb-0">@prihvacene</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <section class="card border-0 shadow-sm">
+        <div class="card-body p-0">
+            @if (!Model.Any())
+            {
+                <div class="p-4 p-lg-5 text-center">
+                    <h3 class="h5 fw-bold">Jos nemate prijava</h3>
+                    <p class="text-muted mx-auto" style="max-width: 520px;">Kada se prijavite na oglas, ovdje ce biti prikazan status, firma, rok prijave i propratni tekst koji ste poslali.</p>
+                    <a class="btn btn-outline-primary" asp-controller="Oglas" asp-action="Index">Pronadi aktivne oglase</a>
+                </div>
+            }
+            else
+            {
+                <div class="list-group list-group-flush">
+                    @foreach (var prijava in Model)
+                    {
+                        var oglas = prijava.Oglas;
+                        var firma = oglas?.Firma;
+                        var badgeClass = prijava.StatusPrijave switch
+                        {
+                            ETFTalentProgram.Models.StatusPrijave.PRIHVACENA => "text-bg-success",
+                            ETFTalentProgram.Models.StatusPrijave.ODBIJENA => "text-bg-danger",
+                            ETFTalentProgram.Models.StatusPrijave.PREGLEDANA => "text-bg-info",
+                            _ => "text-bg-secondary"
+                        };
+
+                        <article class="list-group-item p-4">
+                            <div class="d-flex flex-column flex-lg-row justify-content-between gap-3">
+                                <div>
+                                    <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
+                                        <h3 class="h5 fw-bold mb-0">@(oglas?.Naslov ?? "Oglas")</h3>
+                                        <span class="badge @badgeClass">@prijava.StatusPrijave</span>
+                                    </div>
+                                    <div class="text-muted">
+                                        @(firma?.Naziv ?? "Firma") - @(oglas?.Lokacija ?? "Lokacija nije unesena")
+                                    </div>
+                                    @if (!string.IsNullOrWhiteSpace(prijava.PropratniTekst))
+                                    {
+                                        <p class="mb-0 mt-3">@prijava.PropratniTekst</p>
+                                    }
+                                </div>
+                                <div class="text-lg-end flex-shrink-0">
+                                    <div class="text-muted small">Datum prijave</div>
+                                    <div class="fw-semibold">@prijava.DatumPrijave.ToString("dd.MM.yyyy")</div>
+                                    @if (oglas != null)
+                                    {
+                                        <div class="text-muted small mt-2">Rok oglasa</div>
+                                        <div class="fw-semibold">@oglas.RokPrijave.ToString("dd.MM.yyyy")</div>
+                                    }
+                                    @if (prijava.DatumOdgovora.HasValue)
+                                    {
+                                        <div class="text-muted small mt-2">Odgovor</div>
+                                        <div class="fw-semibold">@prijava.DatumOdgovora.Value.ToString("dd.MM.yyyy")</div>
+                                    }
+                                </div>
+                            </div>
+                        </article>
+                    }
+                </div>
+            }
+        </div>
+    </section>
+</div>

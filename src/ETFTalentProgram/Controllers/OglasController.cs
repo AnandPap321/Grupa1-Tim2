@@ -2,8 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using ETFTalentProgram.Constants;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using ETFTalentProgram.Data;
 using ETFTalentProgram.Models;
@@ -25,8 +27,72 @@ namespace ETFTalentProgram.Controllers
         // GET: Oglas
         public async Task<IActionResult> Index()
         {
-            var applicationDbContext = _context.Oglasi.Include(o => o.Firma);
-            return View(await applicationDbContext.ToListAsync());
+            var oglasiQuery = _context.Oglasi
+                .Include(o => o.Firma)
+                .OrderByDescending(o => o.StatusOglasa == StatusOglasa.AKTIVAN)
+                .ThenBy(o => o.RokPrijave)
+                .AsQueryable();
+
+            var oglasi = await oglasiQuery.ToListAsync();
+
+            if (User.IsInRole(AppRoles.Student))
+            {
+                var student = await GetOrCreateCurrentStudentAsync();
+                ViewData["AppliedOglasIds"] = await _context.PrijaveOglasa
+                    .Where(p => p.StudentId == student.Id)
+                    .Select(p => p.OglasId)
+                    .ToHashSetAsync();
+            }
+
+            return View(oglasi);
+        }
+
+        // POST: Oglas/PrijaviSe/5
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles = AppRoles.Student)]
+        public async Task<IActionResult> PrijaviSe(long id, string? propratniTekst)
+        {
+            var student = await GetOrCreateCurrentStudentAsync();
+            var oglas = await _context.Oglasi.FirstOrDefaultAsync(o => o.Id == id);
+
+            if (oglas == null)
+            {
+                return NotFound();
+            }
+
+            if (oglas.StatusOglasa != StatusOglasa.AKTIVAN)
+            {
+                TempData["StatusMessage"] = "Na ovaj oglas se trenutno nije moguce prijaviti.";
+                return RedirectToAction(nameof(Index));
+            }
+
+            var alreadyApplied = await _context.PrijaveOglasa
+                .AnyAsync(p => p.StudentId == student.Id && p.OglasId == id);
+
+            if (alreadyApplied)
+            {
+                TempData["StatusMessage"] = "Vec ste poslali prijavu na ovaj oglas.";
+                return RedirectToAction(nameof(Index));
+            }
+
+            var prijava = new PrijavaOglas
+            {
+                DatumPrijave = DateTime.UtcNow,
+                PropratniTekst = string.IsNullOrWhiteSpace(propratniTekst)
+                    ? "Prijava poslana putem ETF Talent Programa."
+                    : propratniTekst.Trim(),
+                StatusPrijave = StatusPrijave.NOVA,
+                StudentId = student.Id,
+                OglasId = oglas.Id
+            };
+
+            _context.PrijaveOglasa.Add(prijava);
+            await _context.SaveChangesAsync();
+            await _logService.InfoAsync("PRIJAVA_KREIRANA", $"Student ID {student.Id} se prijavio na oglas ID {oglas.Id}.");
+
+            TempData["StatusMessage"] = "Prijava je uspjesno poslana.";
+            return RedirectToAction("MojePrijave", "Student");
         }
 
         // GET: Oglas/Details/5
@@ -43,6 +109,13 @@ namespace ETFTalentProgram.Controllers
             if (oglas == null)
             {
                 return NotFound();
+            }
+
+            if (User.IsInRole(AppRoles.Student))
+            {
+                var student = await GetOrCreateCurrentStudentAsync();
+                ViewData["IsApplied"] = await _context.PrijaveOglasa
+                    .AnyAsync(p => p.StudentId == student.Id && p.OglasId == oglas.Id);
             }
 
             return View(oglas);
@@ -165,6 +238,45 @@ namespace ETFTalentProgram.Controllers
         private bool OglasExists(long id)
         {
             return _context.Oglasi.Any(e => e.Id == id);
+        }
+
+        private async Task<Student> GetOrCreateCurrentStudentAsync()
+        {
+            var email = User.Identity?.Name ?? string.Empty;
+            var student = await _context.Studenti.FirstOrDefaultAsync(s => s.Email == email);
+
+            if (student != null)
+            {
+                return student;
+            }
+
+            student = new Student
+            {
+                Ime = GetNameFromEmail(email),
+                Prezime = string.Empty,
+                BrIndeksa = string.Empty,
+                GodinaStudija = 0,
+                GodinaUpisa = DateTime.Today.Year,
+                ProsjekOcjena = 0,
+                Verificiran = false,
+                Email = email,
+                Lozinka = string.Empty,
+                Uloga = Uloga.STUDENT,
+                Status = Status.AKTIVAN,
+                DatumRegistracije = DateTime.UtcNow,
+                DatumZadnjePrijave = DateTime.UtcNow
+            };
+
+            _context.Studenti.Add(student);
+            await _context.SaveChangesAsync();
+
+            return student;
+        }
+
+        private static string GetNameFromEmail(string email)
+        {
+            var atIndex = email.IndexOf('@');
+            return atIndex > 0 ? email[..atIndex] : email;
         }
     }
 }
