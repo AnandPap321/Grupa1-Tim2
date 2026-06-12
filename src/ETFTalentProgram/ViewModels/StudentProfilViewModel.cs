@@ -11,6 +11,7 @@ namespace ETFTalentProgram.ViewModels
         public string BrojIndeksa { get; set; } = string.Empty;
         public string Email { get; set; } = string.Empty;
         public int GodinaStudija { get; set; }
+        public int GodinaUpisa { get; set; }
         public double ProsjekOcjena { get; set; }
         public int EctsBodovi { get; set; }
         public double Rang { get; set; }
@@ -47,6 +48,7 @@ namespace ETFTalentProgram.ViewModels
                 BrojIndeksa = student?.BrIndeksa ?? string.Empty,
                 Email = student?.Email ?? string.Empty,
                 GodinaStudija = student?.GodinaStudija ?? 0,
+                GodinaUpisa = student?.GodinaUpisa ?? DateTime.Today.Year,
                 ProsjekOcjena = student?.ProsjekOcjena ?? 0,
                 EctsBodovi = ectsBodovi,
                 Rang = profil.Rang,

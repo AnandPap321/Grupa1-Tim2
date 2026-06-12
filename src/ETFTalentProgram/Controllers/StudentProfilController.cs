@@ -44,6 +44,13 @@ namespace ETFTalentProgram.Controllers
                 return Forbid();
             }
 
+            profil.Student.Ime = NormalizeText(model.Ime);
+            profil.Student.Prezime = NormalizeText(model.Prezime);
+            profil.Student.BrIndeksa = NormalizeText(model.BrojIndeksa);
+            profil.Student.GodinaStudija = Math.Clamp(model.GodinaStudija, 0, 10);
+            profil.Student.GodinaUpisa = model.GodinaUpisa <= 0 ? DateTime.Today.Year : model.GodinaUpisa;
+            profil.Student.ProsjekOcjena = Math.Clamp(model.ProsjekOcjena, 0, 10);
+            profil.Student.Verificiran = false;
             profil.Biografija = NormalizeText(model.Biografija);
             profil.Vjestine = NormalizeCommaList(model.Vjestine);
             profil.PreferiraneTehnologije = profil.Vjestine;
@@ -52,13 +59,11 @@ namespace ETFTalentProgram.Controllers
             profil.DostupanOd = model.DostupanOd == default ? DateTime.Today : model.DostupanOd;
             profil.Rang = CalculateRank(profil.Student, profil.Vjestine, profil.Projekti);
             profil.DatumAzuriranja = DateTime.UtcNow;
-            profil.StatusVerifikacije = profil.Student.Verificiran
-                ? StatusVerifikacije.VERIFICIRAN
-                : StatusVerifikacije.NA_CEKANJU;
+            profil.StatusVerifikacije = StatusVerifikacije.NA_CEKANJU;
 
             await _context.SaveChangesAsync();
             await _logService.InfoAsync("STUDENT_PROFIL_AZURIRAN", $"Azuriran profil studenta ID {profil.StudentId}.");
-            TempData["StatusMessage"] = "Profil je uspješno sačuvan.";
+            TempData["StatusMessage"] = "Profil je uspješno sačuvan i poslan na ponovnu verifikaciju.";
 
             return RedirectToAction(nameof(Index));
         }

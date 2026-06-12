@@ -51,41 +51,51 @@
         <section class="card">
             <div class="card-body">
                 <h2 class="h5 fw-bold">Osnovne informacije</h2>
-                <p class="text-muted">Vaši osnovni podaci i kontakt informacije</p>
+                <p class="text-muted">Vasi osnovni podaci i kontakt informacije.</p>
                 <div class="row g-3">
                     <div class="col-md-6">
-                        <label class="form-label fw-semibold">Ime</label>
-                        <input class="form-control" value="@Model.Ime" disabled />
+                        <label asp-for="Ime" class="form-label fw-semibold">Ime</label>
+                        <input asp-for="Ime" class="form-control" />
+                        <span asp-validation-for="Ime" class="text-danger"></span>
                     </div>
                     <div class="col-md-6">
-                        <label class="form-label fw-semibold">Prezime</label>
-                        <input class="form-control" value="@Model.Prezime" disabled />
+                        <label asp-for="Prezime" class="form-label fw-semibold">Prezime</label>
+                        <input asp-for="Prezime" class="form-control" />
+                        <span asp-validation-for="Prezime" class="text-danger"></span>
                     </div>
                     <div class="col-md-6">
-                        <label class="form-label fw-semibold">Broj indeksa</label>
-                        <input class="form-control" value="@Model.BrojIndeksa" disabled />
+                        <label asp-for="BrojIndeksa" class="form-label fw-semibold">Broj indeksa</label>
+                        <input asp-for="BrojIndeksa" class="form-control" />
+                        <span asp-validation-for="BrojIndeksa" class="text-danger"></span>
                     </div>
                     <div class="col-md-6">
-                        <label class="form-label fw-semibold">Godina studija</label>
-                        <input class="form-control" value="@(Model.GodinaStudija == 0 ? "" : $"{Model.GodinaStudija}. godina")" disabled />
+                        <label asp-for="GodinaStudija" class="form-label fw-semibold">Godina studija</label>
+                        <input asp-for="GodinaStudija" type="number" min="0" max="10" class="form-control" />
+                        <span asp-validation-for="GodinaStudija" class="text-danger"></span>
                     </div>
-                    <div class="col-12">
+                    <div class="col-md-6">
+                        <label asp-for="GodinaUpisa" class="form-label fw-semibold">Godina upisa</label>
+                        <input asp-for="GodinaUpisa" type="number" min="1990" max="2100" class="form-control" />
+                        <span asp-validation-for="GodinaUpisa" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-6">
                         <label class="form-label fw-semibold">Email</label>
                         <input class="form-control" value="@Model.Email" disabled />
                     </div>
                 </div>
-                <p class="text-muted mt-3 mb-0">Osnovne informacije se ne mogu mijenjati. Kontaktirajte studentsku službu za izmjene.</p>
+                <p class="text-muted mt-3 mb-0">Nakon izmjene osnovnih informacija profil se ponovo salje na verifikaciju.</p>
             </div>
         </section>
 
         <section class="card">
             <div class="card-body">
                 <h2 class="h5 fw-bold">Akademski podaci</h2>
-                <p class="text-muted">Vaš akademski uspjeh i rang</p>
+                <p class="text-muted">Vas akademski uspjeh i rang.</p>
                 <div class="row g-3">
                     <div class="col-md-4">
-                        <label class="form-label fw-semibold">Prosječna ocjena</label>
-                        <input class="form-control" value="@Model.ProsjekOcjena.ToString("0.##")" disabled />
+                        <label asp-for="ProsjekOcjena" class="form-label fw-semibold">Prosjecna ocjena</label>
+                        <input asp-for="ProsjekOcjena" type="number" min="0" max="10" step="0.01" class="form-control" />
+                        <span asp-validation-for="ProsjekOcjena" class="text-danger"></span>
                     </div>
                     <div class="col-md-4">
                         <label class="form-label fw-semibold">ECTS bodova</label>
@@ -97,7 +107,7 @@
                     </div>
                 </div>
                 <div class="alert alert-primary mt-3 mb-0">
-                    Vaš rang se automatski izračunava na osnovu ocjena, projekata i vještina. Ažurira se svaki put kada izmijenite profil.
+                    Rang se automatski izracunava na osnovu ocjena, projekata i vjestina. Azurira se svaki put kada izmijenite profil.
                 </div>
             </div>
         </section>
@@ -105,15 +115,16 @@
         <section class="card">
             <div class="card-body">
                 <h2 class="h5 fw-bold">Biografija</h2>
-                <p class="text-muted">Kratko predstavite sebe poslodavcima</p>
-                <textarea asp-for="Biografija" class="form-control" rows="4" placeholder="Npr. Student treće godine softverskog inženjerstva sa interesom za web development."></textarea>
+                <p class="text-muted">Kratko predstavite sebe poslodavcima.</p>
+                <textarea asp-for="Biografija" class="form-control" rows="4" placeholder="Npr. Student trece godine softverskog inzenjerstva sa interesom za web development."></textarea>
+                <span asp-validation-for="Biografija" class="text-danger"></span>
             </div>
         </section>
 
         <section class="card">
             <div class="card-body">
-                <h2 class="h5 fw-bold">Vještine i tehnologije</h2>
-                <p class="text-muted">Programski jezici, framework-ovi i alati koje poznajete</p>
+                <h2 class="h5 fw-bold">Vjestine i tehnologije</h2>
+                <p class="text-muted">Programski jezici, framework-ovi i alati koje poznajete.</p>
                 <div class="d-flex flex-wrap gap-2 mb-3">
                     @foreach (var vjestina in Model.VjestineLista)
                     {
@@ -128,7 +139,7 @@
         <section class="card">
             <div class="card-body">
                 <h2 class="h5 fw-bold">Projekti</h2>
-                <p class="text-muted">Vaši lični i akademski projekti</p>
+                <p class="text-muted">Vasi licni i akademski projekti.</p>
                 <div class="d-grid gap-3">
                     @foreach (var projekat in Model.ProjektiLista)
                     {
@@ -147,7 +158,7 @@
                         </article>
                     }
                 </div>
-                <label class="form-label fw-semibold mt-3">Projekti</label>
+                <label asp-for="Projekti" class="form-label fw-semibold mt-3">Projekti</label>
                 <textarea asp-for="Projekti" class="form-control" rows="5" placeholder="E-commerce platforma | Full-stack web aplikacija | React, Node.js, MongoDB"></textarea>
                 <div class="form-text">Unesite svaki projekat u novi red u formatu: Naziv | Opis | Tehnologije.</div>
                 <span asp-validation-for="Projekti" class="text-danger"></span>
@@ -157,8 +168,8 @@
         <section class="card">
             <div class="card-body">
                 <h2 class="h5 fw-bold">Preferencije</h2>
-                <p class="text-muted">Željena lokacija i dostupnost</p>
-                <label class="form-label fw-semibold">Preferirane lokacije</label>
+                <p class="text-muted">Zeljena lokacija i dostupnost.</p>
+                <label asp-for="PreferiraneLokacije" class="form-label fw-semibold">Preferirane lokacije</label>
                 <div class="d-flex flex-wrap gap-2 mb-3">
                     @foreach (var lokacija in Model.LokacijeLista)
                     {
@@ -168,14 +179,16 @@
                 <input asp-for="PreferiraneLokacije" class="form-control" placeholder="Sarajevo, Remote" />
                 <span asp-validation-for="PreferiraneLokacije" class="text-danger"></span>
 
-                <label class="form-label fw-semibold mt-3">Dostupan od</label>
+                <label asp-for="DostupanOd" class="form-label fw-semibold mt-3">Dostupan od</label>
                 <input asp-for="DostupanOd" type="date" class="form-control" />
                 <span asp-validation-for="DostupanOd" class="text-danger"></span>
             </div>
         </section>
 
+        <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
         <div class="d-flex justify-content-end">
-            <button type="submit" class="btn btn-primary">Sačuvaj izmjene</button>
+            <button type="submit" class="btn btn-primary">Sacuvaj izmjene</button>
         </div>
     </form>
 </div>

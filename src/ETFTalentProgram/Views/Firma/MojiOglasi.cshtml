@@ -1,0 +1,80 @@
+@model IEnumerable<ETFTalentProgram.Models.Oglas>
+
+@{
+    ViewData["Title"] = "Moji oglasi";
+    var prijavePoOglasu = ViewData["BrojPrijavaPoOglasu"] as Dictionary<long, int> ?? new Dictionary<long, int>();
+}
+
+@await Html.PartialAsync("_FirmaNavigation")
+
+<div class="mx-auto mb-5" style="max-width: 1040px;">
+    @if (TempData["StatusMessage"] is string message)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @message
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+        <div>
+            <h2 class="h4 fw-bold mb-1">Moji oglasi</h2>
+            <p class="text-muted mb-0">Pregled, uređivanje i praćenje prijava za oglase vaše firme.</p>
+        </div>
+        <a asp-action="Objavi_oglas" class="btn btn-primary">Objavi oglas</a>
+    </div>
+
+    @if (!Model.Any())
+    {
+        <section class="card border-0 shadow-sm">
+            <div class="card-body p-5 text-center">
+                <h3 class="h5 fw-bold">Još nemate objavljenih oglasa</h3>
+                <p class="text-muted mb-3">Kada kreirate oglas, ovdje ćete vidjeti prijave studenata i alate za upravljanje.</p>
+                <a asp-action="Objavi_oglas" class="btn btn-primary">Objavi prvi oglas</a>
+            </div>
+        </section>
+    }
+    else
+    {
+        <div class="d-grid gap-3">
+            @foreach (var oglas in Model)
+            {
+                var brojPrijava = prijavePoOglasu.TryGetValue(oglas.Id, out var broj) ? broj : 0;
+                var isActive = oglas.StatusOglasa == ETFTalentProgram.Models.StatusOglasa.AKTIVAN;
+                var statusClass = isActive ? "text-bg-success" : "text-bg-secondary";
+
+                <article class="card border-0 shadow-sm">
+                    <div class="card-body p-4">
+                        <div class="d-flex flex-column flex-lg-row justify-content-between gap-3">
+                            <div class="flex-grow-1">
+                                <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
+                                    <h3 class="h5 fw-bold mb-0">@oglas.Naslov</h3>
+                                    <span class="badge @statusClass">@oglas.StatusOglasa</span>
+                                    <span class="badge text-bg-light border">@oglas.TipOglasa</span>
+                                    <span class="badge text-bg-light border">@oglas.TipAngazmana.ToString().Replace("_", " ")</span>
+                                </div>
+                                <div class="text-muted small mb-2">@oglas.Lokacija - Rok: @oglas.RokPrijave.ToString("dd.MM.yyyy")</div>
+                                <p class="mb-0">@oglas.Opis</p>
+                            </div>
+
+                            <aside class="border rounded p-3 flex-shrink-0" style="min-width: 220px;">
+                                <div class="text-muted small">Prijave studenata</div>
+                                <div class="h4 fw-bold mb-3">@brojPrijava</div>
+                                <div class="d-grid gap-2">
+                                    <a asp-action="Prijave" asp-route-id="@oglas.Id" class="btn btn-outline-primary">Vidi prijave</a>
+                                    <a asp-action="Uredi_oglas" asp-route-id="@oglas.Id" class="btn btn-outline-secondary">Uredi oglas</a>
+                                    @if (isActive)
+                                    {
+                                        <form asp-action="Skini_oglas" asp-route-id="@oglas.Id" method="post">
+                                            <button type="submit" class="btn btn-outline-danger w-100">Skini oglas</button>
+                                        </form>
+                                    }
+                                </div>
+                            </aside>
+                        </div>
+                    </div>
+                </article>
+            }
+        </div>
+    }
+</div>

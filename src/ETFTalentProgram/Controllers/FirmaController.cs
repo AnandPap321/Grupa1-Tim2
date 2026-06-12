@@ -47,6 +47,168 @@ namespace ETFTalentProgram.Controllers
             return View(model);
         }
 
+        // GET: Firma/MojiOglasi
+        [Authorize(Roles = AppRoles.Firma)]
+        public async Task<IActionResult> MojiOglasi()
+        {
+            var firma = await GetOrCreateCurrentFirmaAsync();
+            var oglasi = await _context.Oglasi
+                .Where(o => o.FirmaId == firma.Id)
+                .OrderByDescending(o => o.DatumObjave)
+                .ToListAsync();
+
+            ViewData["BrojPrijavaPoOglasu"] = await _context.PrijaveOglasa
+                .Where(p => p.Oglas.FirmaId == firma.Id)
+                .GroupBy(p => p.OglasId)
+                .Select(g => new { OglasId = g.Key, Broj = g.Count() })
+                .ToDictionaryAsync(x => x.OglasId, x => x.Broj);
+
+            return View(oglasi);
+        }
+
+        // GET: Firma/Uredi_oglas/5
+        [Authorize(Roles = AppRoles.Firma)]
+        public async Task<IActionResult> Uredi_oglas(long id)
+        {
+            var firma = await GetOrCreateCurrentFirmaAsync();
+            var oglas = await _context.Oglasi
+                .FirstOrDefaultAsync(o => o.Id == id && o.FirmaId == firma.Id);
+
+            if (oglas == null)
+            {
+                return NotFound();
+            }
+
+            return View(oglas);
+        }
+
+        // POST: Firma/Uredi_oglas/5
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles = AppRoles.Firma)]
+        public async Task<IActionResult> Uredi_oglas(long id, [Bind("Id,Naslov,Opis,Tehnologije,RokPrijave,DatumObjave,TipOglasa,TipAngazmana,StatusOglasa,Lokacija,MinRang,MinProsjek,Kompenzacija")] Oglas oglas)
+        {
+            if (id != oglas.Id)
+            {
+                return NotFound();
+            }
+
+            var firma = await GetOrCreateCurrentFirmaAsync();
+            var existingOglas = await _context.Oglasi
+                .FirstOrDefaultAsync(o => o.Id == id && o.FirmaId == firma.Id);
+
+            if (existingOglas == null)
+            {
+                return NotFound();
+            }
+
+            ModelState.Remove(nameof(Oglas.Firma));
+
+            if (!ModelState.IsValid)
+            {
+                oglas.FirmaId = firma.Id;
+                return View(oglas);
+            }
+
+            existingOglas.Naslov = oglas.Naslov;
+            existingOglas.Opis = oglas.Opis;
+            existingOglas.Tehnologije = oglas.Tehnologije;
+            existingOglas.RokPrijave = oglas.RokPrijave;
+            existingOglas.DatumObjave = oglas.DatumObjave == default ? existingOglas.DatumObjave : oglas.DatumObjave;
+            existingOglas.TipOglasa = oglas.TipOglasa;
+            existingOglas.TipAngazmana = oglas.TipAngazmana;
+            existingOglas.StatusOglasa = oglas.StatusOglasa;
+            existingOglas.Lokacija = oglas.Lokacija;
+            existingOglas.MinRang = oglas.MinRang;
+            existingOglas.MinProsjek = oglas.MinProsjek;
+            existingOglas.Kompenzacija = oglas.Kompenzacija?.Trim() ?? string.Empty;
+
+            await _context.SaveChangesAsync();
+            TempData["StatusMessage"] = "Oglas je uspješno ažuriran.";
+
+            return RedirectToAction(nameof(MojiOglasi));
+        }
+
+        // POST: Firma/Skini_oglas/5
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles = AppRoles.Firma)]
+        public async Task<IActionResult> Skini_oglas(long id)
+        {
+            var firma = await GetOrCreateCurrentFirmaAsync();
+            var oglas = await _context.Oglasi
+                .FirstOrDefaultAsync(o => o.Id == id && o.FirmaId == firma.Id);
+
+            if (oglas == null)
+            {
+                return NotFound();
+            }
+
+            oglas.StatusOglasa = StatusOglasa.ARHIVIRAN;
+            await _context.SaveChangesAsync();
+
+            TempData["StatusMessage"] = "Oglas je skinut sa aktivnih oglasa.";
+            return RedirectToAction(nameof(MojiOglasi));
+        }
+
+        // GET: Firma/Prijave/5
+        [Authorize(Roles = AppRoles.Firma)]
+        public async Task<IActionResult> Prijave(long id)
+        {
+            var firma = await GetOrCreateCurrentFirmaAsync();
+            var oglas = await _context.Oglasi
+                .Include(o => o.Firma)
+                .FirstOrDefaultAsync(o => o.Id == id && o.FirmaId == firma.Id);
+
+            if (oglas == null)
+            {
+                return NotFound();
+            }
+
+            var prijave = await _context.PrijaveOglasa
+                .Include(p => p.Student)
+                .Where(p => p.OglasId == oglas.Id)
+                .OrderByDescending(p => p.DatumPrijave)
+                .ToListAsync();
+
+            ViewData["Oglas"] = oglas;
+            ViewData["StudentProfili"] = await _context.StudentProfili
+                .Where(p => prijave.Select(x => x.StudentId).Contains(p.StudentId))
+                .ToDictionaryAsync(p => p.StudentId);
+
+            return View(prijave);
+        }
+
+        // POST: Firma/PromijeniStatusPrijave/5
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles = AppRoles.Firma)]
+        public async Task<IActionResult> PromijeniStatusPrijave(long id, StatusPrijave status)
+        {
+            if (status != StatusPrijave.PRIHVACENA && status != StatusPrijave.ODBIJENA && status != StatusPrijave.PREGLEDANA)
+            {
+                return BadRequest();
+            }
+
+            var firma = await GetOrCreateCurrentFirmaAsync();
+            var prijava = await _context.PrijaveOglasa
+                .Include(p => p.Oglas)
+                .FirstOrDefaultAsync(p => p.Id == id && p.Oglas.FirmaId == firma.Id);
+
+            if (prijava == null)
+            {
+                return NotFound();
+            }
+
+            prijava.StatusPrijave = status;
+            prijava.DatumOdgovora = status == StatusPrijave.PREGLEDANA ? prijava.DatumOdgovora : DateTime.UtcNow;
+
+            await _context.SaveChangesAsync();
+            TempData["StatusMessage"] = $"Status prijave je promijenjen u {status}.";
+
+            return RedirectToAction(nameof(Prijave), new { id = prijava.OglasId });
+        }
+
         // GET: Firma/Details/5
         [Authorize(Roles = AppRoles.Referent)]
         public async Task<IActionResult> Details(long? id)
@@ -189,6 +351,7 @@ namespace ETFTalentProgram.Controllers
         {
             var firma = await GetOrCreateCurrentFirmaAsync();
             var firmaProfil = await GetOrCreateCurrentFirmaProfileAsync(firma);
+            PopulateFirmaProfileViewData(firma);
 
             return View(firmaProfil);
         }
@@ -197,7 +360,13 @@ namespace ETFTalentProgram.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = AppRoles.Firma)]
-        public async Task<IActionResult> Profil_firme([Bind("Id,KratakOpis,PunOpis,Lokacija,Website,KontaktEmail,Logotip,TehnologijeStack,DatumAzuriranja,FirmaId")] FirmaProfil firmaProfil)
+        public async Task<IActionResult> Profil_firme(
+            [Bind("Id,KratakOpis,PunOpis,Lokacija,Website,KontaktEmail,Logotip,TehnologijeStack,DatumAzuriranja,FirmaId")] FirmaProfil firmaProfil,
+            string naziv,
+            string opisFirme,
+            string industrijskiSektor,
+            VelicinaFirme velicinaFirme,
+            int godinaOsnivanja)
         {
             if (ModelState.IsValid)
             {
@@ -210,6 +379,15 @@ namespace ETFTalentProgram.Controllers
                         return Forbid();
                     }
 
+                    firma.Naziv = NormalizeText(naziv);
+                    firma.OpisFirme = NormalizeText(opisFirme);
+                    firma.Lokacija = NormalizeText(firmaProfil.Lokacija);
+                    firma.Website = NormalizeText(firmaProfil.Website);
+                    firma.KontaktEmail = NormalizeText(firmaProfil.KontaktEmail);
+                    firma.IndustrijskiSektor = NormalizeText(industrijskiSektor);
+                    firma.VelicinaFirme = velicinaFirme;
+                    firma.GodinaOsnivanja = godinaOsnivanja <= 0 ? DateTime.Today.Year : godinaOsnivanja;
+
                     existingProfil.KratakOpis = firmaProfil.KratakOpis;
                     existingProfil.PunOpis = firmaProfil.PunOpis;
                     existingProfil.Lokacija = firmaProfil.Lokacija;
@@ -220,7 +398,7 @@ namespace ETFTalentProgram.Controllers
                     existingProfil.DatumAzuriranja = DateTime.UtcNow;
                     existingProfil.StatusVerifikacije = StatusVerifikacije.NA_CEKANJU;
                     await _context.SaveChangesAsync();
-                    TempData["StatusMessage"] = "Profil je uspješno ažuriran.";
+                    TempData["StatusMessage"] = "Profil firme je uspješno ažuriran i poslan na ponovnu verifikaciju.";
                     return RedirectToAction(nameof(Profil_firme));
                 }
                 catch (DbUpdateConcurrencyException)
@@ -235,6 +413,8 @@ namespace ETFTalentProgram.Controllers
                     }
                 }
             }
+
+            PopulateFirmaProfileViewData(await GetOrCreateCurrentFirmaAsync());
             return View(firmaProfil);
         }
 
@@ -344,6 +524,20 @@ namespace ETFTalentProgram.Controllers
         {
             var atIndex = email.IndexOf('@');
             return atIndex > 0 ? email[..atIndex] : email;
+        }
+
+        private void PopulateFirmaProfileViewData(Firma firma)
+        {
+            ViewData["Naziv"] = firma.Naziv;
+            ViewData["OpisFirme"] = firma.OpisFirme;
+            ViewData["IndustrijskiSektor"] = firma.IndustrijskiSektor;
+            ViewData["VelicinaFirme"] = firma.VelicinaFirme;
+            ViewData["GodinaOsnivanja"] = firma.GodinaOsnivanja;
+        }
+
+        private static string NormalizeText(string? value)
+        {
+            return (value ?? string.Empty).Trim();
         }
     }
 }

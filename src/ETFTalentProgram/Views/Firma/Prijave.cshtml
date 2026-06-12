@@ -1,0 +1,82 @@
+@model IEnumerable<ETFTalentProgram.Models.PrijavaOglas>
+
+@{
+    var oglas = ViewData["Oglas"] as ETFTalentProgram.Models.Oglas;
+    var profili = ViewData["StudentProfili"] as Dictionary<long, ETFTalentProgram.Models.StudentProfil> ?? new Dictionary<long, ETFTalentProgram.Models.StudentProfil>();
+    ViewData["Title"] = oglas == null ? "Prijave" : $"Prijave - {oglas.Naslov}";
+}
+
+@await Html.PartialAsync("_FirmaNavigation")
+
+<div class="mx-auto mb-5" style="max-width: 1040px;">
+    @if (TempData["StatusMessage"] is string message)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @message
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <div class="mb-4">
+        <a asp-action="MojiOglasi" class="btn btn-link px-0 text-decoration-none">Nazad na moje oglase</a>
+        <h2 class="h4 fw-bold mb-1">Prijave studenata</h2>
+        @if (oglas != null)
+        {
+            <p class="text-muted mb-0">@oglas.Naslov - @oglas.Lokacija</p>
+        }
+    </div>
+
+    @if (!Model.Any())
+    {
+        <section class="card border-0 shadow-sm">
+            <div class="card-body p-5 text-center">
+                <h3 class="h5 fw-bold">Nema prijava za ovaj oglas</h3>
+                <p class="text-muted mb-0">Kada se student prijavi, njegova prijava će se pojaviti ovdje.</p>
+            </div>
+        </section>
+    }
+    else
+    {
+        <div class="d-grid gap-3">
+            @foreach (var prijava in Model)
+            {
+                profili.TryGetValue(prijava.StudentId, out var profil);
+
+                <article class="card border-0 shadow-sm">
+                    <div class="card-body p-4">
+                        <div class="d-flex flex-column flex-lg-row justify-content-between gap-3">
+                            <div class="flex-grow-1">
+                                <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
+                                    <h3 class="h5 fw-bold mb-0">@prijava.Student.Ime @prijava.Student.Prezime</h3>
+                                    <span class="badge text-bg-light border">@prijava.StatusPrijave</span>
+                                    @if (profil != null)
+                                    {
+                                        <span class="badge text-bg-light border">Rang @profil.Rang.ToString("0.0")</span>
+                                        <span class="badge text-bg-light border">@profil.StatusVerifikacije</span>
+                                    }
+                                </div>
+                                <div class="text-muted small mb-3">
+                                    @prijava.Student.Email
+                                    @if (!string.IsNullOrWhiteSpace(prijava.Student.BrIndeksa))
+                                    {
+                                        <span>- Index: @prijava.Student.BrIndeksa</span>
+                                    }
+                                    <span>- Prijava: @prijava.DatumPrijave.ToString("dd.MM.yyyy HH:mm")</span>
+                                </div>
+                                <p class="mb-0">@prijava.PropratniTekst</p>
+                            </div>
+
+                            <aside class="border rounded p-3 flex-shrink-0" style="min-width: 220px;">
+                                <form asp-action="PromijeniStatusPrijave" asp-route-id="@prijava.Id" method="post" class="d-grid gap-2">
+                                    <button type="submit" name="status" value="@ETFTalentProgram.Models.StatusPrijave.PREGLEDANA" class="btn btn-outline-secondary">Označi pregledano</button>
+                                    <button type="submit" name="status" value="@ETFTalentProgram.Models.StatusPrijave.PRIHVACENA" class="btn btn-outline-success">Prihvati</button>
+                                    <button type="submit" name="status" value="@ETFTalentProgram.Models.StatusPrijave.ODBIJENA" class="btn btn-outline-danger">Odbij</button>
+                                </form>
+                            </aside>
+                        </div>
+                    </div>
+                </article>
+            }
+        </div>
+    }
+</div>

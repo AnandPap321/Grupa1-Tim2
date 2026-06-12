@@ -2,6 +2,12 @@
 
 @{
     ViewData["Title"] = "Profil firme";
+    var naziv = ViewData["Naziv"] as string ?? string.Empty;
+    var opisFirme = ViewData["OpisFirme"] as string ?? string.Empty;
+    var industrijskiSektor = ViewData["IndustrijskiSektor"] as string ?? string.Empty;
+    var velicinaFirme = ViewData["VelicinaFirme"] as ETFTalentProgram.Models.VelicinaFirme?
+        ?? ETFTalentProgram.Models.VelicinaFirme.MALA;
+    var godinaOsnivanja = ViewData["GodinaOsnivanja"] as int? ?? DateTime.Today.Year;
 }
 
 @await Html.PartialAsync("_FirmaNavigation")
@@ -17,8 +23,8 @@
 
     <div class="card">
         <div class="card-body">
-            <h2 class="h5 fw-bold mb-3">Osnovne informacije</h2>
-            <p class="text-muted">Azurirajte informacije o vasoj firmi</p>
+            <h2 class="h5 fw-bold mb-3">Profil firme</h2>
+            <p class="text-muted">Azurirajte osnovne, kontakt i javne informacije o firmi.</p>
 
             <form asp-action="Profil_firme" method="post" class="d-grid gap-4">
                 <input type="hidden" asp-for="Id" />
@@ -26,7 +32,35 @@
 
                 <section class="card">
                     <div class="card-body">
-                        <h3 class="h6 fw-semibold mb-3">Opis firme</h3>
+                        <h3 class="h6 fw-semibold mb-3">Osnovne informacije</h3>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold" for="naziv">Naziv firme</label>
+                                <input id="naziv" name="naziv" class="form-control" value="@naziv" required />
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold" for="industrijskiSektor">Industrijski sektor</label>
+                                <input id="industrijskiSektor" name="industrijskiSektor" class="form-control" value="@industrijskiSektor" placeholder="IT, finansije, edukacija..." />
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold" for="velicinaFirme">Velicina firme</label>
+                                <select id="velicinaFirme" name="velicinaFirme" class="form-control" asp-items="Html.GetEnumSelectList<ETFTalentProgram.Models.VelicinaFirme>()"></select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold" for="godinaOsnivanja">Godina osnivanja</label>
+                                <input id="godinaOsnivanja" name="godinaOsnivanja" type="number" min="1800" max="2100" class="form-control" value="@godinaOsnivanja" />
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label fw-semibold" for="opisFirme">Kratak opis firme u sistemu</label>
+                                <textarea id="opisFirme" name="opisFirme" class="form-control" rows="3">@opisFirme</textarea>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="card">
+                    <div class="card-body">
+                        <h3 class="h6 fw-semibold mb-3">Javni opis profila</h3>
                         <div class="row g-3">
                             <div class="col-12">
                                 <label asp-for="KratakOpis" class="form-label fw-semibold">Kratak opis</label>
@@ -35,7 +69,7 @@
                             </div>
                             <div class="col-12">
                                 <label asp-for="PunOpis" class="form-label fw-semibold">Puni opis</label>
-                                <textarea asp-for="PunOpis" class="form-control" rows="5" placeholder="Detaljniji opis vaseg poslovanja..."></textarea>
+                                <textarea asp-for="PunOpis" class="form-control" rows="5" placeholder="Detaljniji opis poslovanja, kulture i oblasti rada..."></textarea>
                                 <span asp-validation-for="PunOpis" class="text-danger"></span>
                             </div>
                         </div>
@@ -79,11 +113,6 @@
                                 <input asp-for="TehnologijeStack" class="form-control" placeholder="React, Node.js, PostgreSQL" />
                                 <span asp-validation-for="TehnologijeStack" class="text-danger"></span>
                             </div>
-                            <div class="col-md-6">
-                                <label asp-for="DatumAzuriranja" class="form-label fw-semibold">Datum azuriranja</label>
-                                <input asp-for="DatumAzuriranja" type="date" class="form-control" />
-                                <span asp-validation-for="DatumAzuriranja" class="text-danger"></span>
-                            </div>
                         </div>
                     </div>
                 </section>
@@ -101,4 +130,7 @@
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script>
+        document.getElementById('velicinaFirme').value = '@velicinaFirme';
+    </script>
 }

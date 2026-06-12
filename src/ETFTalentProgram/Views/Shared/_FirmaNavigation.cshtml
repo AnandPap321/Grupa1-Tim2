@@ -5,6 +5,8 @@
     var isDashboardActive = currentController == "Firma" && currentAction == "Index";
     var isProfilActive = currentController == "Firma" && currentAction == "Profil_firme";
     var isOglasActive = currentController == "Firma" && currentAction == "Objavi_oglas";
+    var isMojiOglasiActive = currentController == "Firma"
+        && (currentAction == "MojiOglasi" || currentAction == "Prijave" || currentAction == "Uredi_oglas");
 }
 
 <div class="mx-auto mb-5" style="max-width: 920px;">
@@ -35,6 +37,13 @@
                href="@Url.Action("Objavi_oglas", "Firma")"
                role="tab">
                 <i class="bi bi-megaphone"></i> Objavi oglas
+            </a>
+        </li>
+        <li class="nav-item" role="presentation">
+            <a class="nav-link @(isMojiOglasiActive ? "active" : "")"
+               href="@Url.Action("MojiOglasi", "Firma")"
+               role="tab">
+                Moji oglasi
             </a>
         </li>
     </ul>

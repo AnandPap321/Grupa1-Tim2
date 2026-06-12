@@ -51,6 +51,7 @@
                 </div>
                 <div class="d-flex gap-2 align-items-start">
                     <a asp-action="Profil_firme" class="btn btn-outline-primary">Uredi profil</a>
+                    <a asp-action="MojiOglasi" class="btn btn-outline-secondary">Moji oglasi</a>
                     <a asp-action="Objavi_oglas" class="btn btn-primary">Objavi oglas</a>
                 </div>
             </div>
@@ -82,6 +83,10 @@
                                 <div class="text-md-end">
                                     <span class="badge text-bg-secondary">@oglas.StatusOglasa</span>
                                     <div class="text-muted small">Rok: @oglas.RokPrijave.ToString("dd.MM.yyyy")</div>
+                                    <div class="d-flex justify-content-md-end gap-2 mt-2">
+                                        <a asp-action="Prijave" asp-route-id="@oglas.Id" class="btn btn-sm btn-outline-primary">Prijave</a>
+                                        <a asp-action="Uredi_oglas" asp-route-id="@oglas.Id" class="btn btn-sm btn-outline-secondary">Uredi</a>
+                                    </div>
                                 </div>
                             </div>
                         </div>
