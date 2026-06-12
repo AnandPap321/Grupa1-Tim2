@@ -44,7 +44,7 @@
         </div>
     }
 
-    <form asp-action="Update" method="post" class="d-grid gap-4">
+    <form id="studentProfileForm" asp-action="Update" method="post" class="d-grid gap-4">
         <input type="hidden" asp-for="Id" />
         <input type="hidden" asp-for="StudentId" />
 
@@ -83,7 +83,9 @@
                         <input class="form-control" value="@Model.Email" disabled />
                     </div>
                 </div>
-                <p class="text-muted mt-3 mb-0">Nakon izmjene osnovnih informacija profil se ponovo salje na verifikaciju.</p>
+                <div class="alert alert-warning mt-3 mb-0">
+                    Ako sacuvate izmjene, status verifikacije profila bit ce vracen na cekanje.
+                </div>
             </div>
         </section>
 
@@ -188,9 +190,27 @@
         <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
 
         <div class="d-flex justify-content-end">
-            <button type="submit" class="btn btn-primary">Sacuvaj izmjene</button>
+            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#confirmStudentProfileModal">Sacuvaj izmjene</button>
         </div>
     </form>
+</div>
+
+<div class="modal fade" id="confirmStudentProfileModal" tabindex="-1" aria-labelledby="confirmStudentProfileModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title h5" id="confirmStudentProfileModalLabel">Potvrda izmjena profila</h2>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Zatvori"></button>
+            </div>
+            <div class="modal-body">
+                Spremanjem izmjena status verifikacije vaseg studentskog profila bit ce postavljen na cekanje dok referent ponovo ne pregleda profil.
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Odbaci</button>
+                <button type="submit" form="studentProfileForm" class="btn btn-primary">Potvrdi izmjene</button>
+            </div>
+        </div>
+    </div>
 </div>
 
 @section Scripts {

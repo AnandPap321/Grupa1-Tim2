@@ -26,13 +26,16 @@
             <h2 class="h5 fw-bold mb-3">Profil firme</h2>
             <p class="text-muted">Azurirajte osnovne, kontakt i javne informacije o firmi.</p>
 
-            <form asp-action="Profil_firme" method="post" class="d-grid gap-4">
+            <form id="firmaProfileForm" asp-action="Profil_firme" method="post" class="d-grid gap-4">
                 <input type="hidden" asp-for="Id" />
                 <input type="hidden" asp-for="FirmaId" />
 
                 <section class="card">
                     <div class="card-body">
                         <h3 class="h6 fw-semibold mb-3">Osnovne informacije</h3>
+                        <div class="alert alert-warning">
+                            Ako sacuvate izmjene, status verifikacije profila firme bit ce vracen na cekanje.
+                        </div>
                         <div class="row g-3">
                             <div class="col-md-6">
                                 <label class="form-label fw-semibold" for="naziv">Naziv firme</label>
@@ -121,9 +124,27 @@
 
                 <div class="d-flex justify-content-end gap-2">
                     <a asp-action="Index" class="btn btn-outline-secondary">Otkazi</a>
-                    <button type="submit" class="btn btn-primary">Sacuvaj izmjene</button>
+                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#confirmFirmaProfileModal">Sacuvaj izmjene</button>
                 </div>
             </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="confirmFirmaProfileModal" tabindex="-1" aria-labelledby="confirmFirmaProfileModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title h5" id="confirmFirmaProfileModalLabel">Potvrda izmjena profila</h2>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Zatvori"></button>
+            </div>
+            <div class="modal-body">
+                Spremanjem izmjena status verifikacije profila firme bit ce postavljen na cekanje dok referent ponovo ne pregleda profil.
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Odbaci</button>
+                <button type="submit" form="firmaProfileForm" class="btn btn-primary">Potvrdi izmjene</button>
+            </div>
         </div>
     </div>
 </div>
