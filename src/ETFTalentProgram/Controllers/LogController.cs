@@ -5,11 +5,14 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authorization;
+using ETFTalentProgram.Constants;
 using ETFTalentProgram.Data;
 using ETFTalentProgram.Models;
 
 namespace ETFTalentProgram.Controllers
 {
+    [Authorize(Roles = AppRoles.Administrator)]
     public class LogController : Controller
     {
         private readonly ApplicationDbContext _context;
@@ -22,7 +25,9 @@ namespace ETFTalentProgram.Controllers
         // GET: Log
         public async Task<IActionResult> Index()
         {
-            return View(await _context.Logovi.ToListAsync());
+            return View(await _context.Logovi
+                .OrderByDescending(log => log.VrijemeAkcije)
+                .ToListAsync());
         }
 
         // GET: Log/Details/5
