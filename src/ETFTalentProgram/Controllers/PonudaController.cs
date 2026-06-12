@@ -7,16 +7,19 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using ETFTalentProgram.Data;
 using ETFTalentProgram.Models;
+using ETFTalentProgram.Services;
 
 namespace ETFTalentProgram.Controllers
 {
     public class PonudaController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly ILogService _logService;
 
-        public PonudaController(ApplicationDbContext context)
+        public PonudaController(ApplicationDbContext context, ILogService logService)
         {
             _context = context;
+            _logService = logService;
         }
 
         // GET: Ponuda
@@ -65,6 +68,7 @@ namespace ETFTalentProgram.Controllers
             {
                 _context.Add(ponuda);
                 await _context.SaveChangesAsync();
+                await _logService.InfoAsync("PONUDA_KREIRANA", $"Kreirana ponuda ID {ponuda.Id}, primalac ID {ponuda.PrimalacId}.");
                 return RedirectToAction(nameof(Index));
             }
             ViewData["PosiljalacId"] = new SelectList(_context.Users, "Id", "Id", ponuda.PosiljalacId);
@@ -108,6 +112,7 @@ namespace ETFTalentProgram.Controllers
                 {
                     _context.Update(ponuda);
                     await _context.SaveChangesAsync();
+                    await _logService.InfoAsync("PONUDA_AZURIRANA", $"Azurirana ponuda ID {ponuda.Id} sa statusom {ponuda.Status}.");
                 }
                 catch (DbUpdateConcurrencyException)
                 {
@@ -156,6 +161,7 @@ namespace ETFTalentProgram.Controllers
             if (ponuda != null)
             {
                 _context.Ponude.Remove(ponuda);
+                await _logService.WarningAsync("PONUDA_OBRISANA", $"Obrisana ponuda ID {ponuda.Id}.");
             }
 
             await _context.SaveChangesAsync();

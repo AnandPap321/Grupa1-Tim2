@@ -1,5 +1,6 @@
 using ETFTalentProgram.Data;
 using ETFTalentProgram.Models;
+using ETFTalentProgram.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -31,6 +32,8 @@ builder.Services.ConfigureApplicationCookie(options =>
 });
 
 builder.Services.AddControllersWithViews();
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<ILogService, LogService>();
 
 var app = builder.Build();
 

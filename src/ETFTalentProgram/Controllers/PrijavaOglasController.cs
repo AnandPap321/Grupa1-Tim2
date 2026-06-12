@@ -7,16 +7,19 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using ETFTalentProgram.Data;
 using ETFTalentProgram.Models;
+using ETFTalentProgram.Services;
 
 namespace ETFTalentProgram.Controllers
 {
     public class PrijavaOglasController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly ILogService _logService;
 
-        public PrijavaOglasController(ApplicationDbContext context)
+        public PrijavaOglasController(ApplicationDbContext context, ILogService logService)
         {
             _context = context;
+            _logService = logService;
         }
 
         // GET: PrijavaOglas
@@ -65,6 +68,7 @@ namespace ETFTalentProgram.Controllers
             {
                 _context.Add(prijavaOglas);
                 await _context.SaveChangesAsync();
+                await _logService.InfoAsync("PRIJAVA_KREIRANA", $"Kreirana prijava ID {prijavaOglas.Id} za oglas ID {prijavaOglas.OglasId}.");
                 return RedirectToAction(nameof(Index));
             }
             ViewData["OglasId"] = new SelectList(_context.Oglasi, "Id", "Id", prijavaOglas.OglasId);
@@ -108,6 +112,7 @@ namespace ETFTalentProgram.Controllers
                 {
                     _context.Update(prijavaOglas);
                     await _context.SaveChangesAsync();
+                    await _logService.InfoAsync("PRIJAVA_AZURIRANA", $"Azurirana prijava ID {prijavaOglas.Id} sa statusom {prijavaOglas.StatusPrijave}.");
                 }
                 catch (DbUpdateConcurrencyException)
                 {
@@ -156,6 +161,7 @@ namespace ETFTalentProgram.Controllers
             if (prijavaOglas != null)
             {
                 _context.PrijaveOglasa.Remove(prijavaOglas);
+                await _logService.WarningAsync("PRIJAVA_OBRISANA", $"Obrisana prijava ID {prijavaOglas.Id}.");
             }
 
             await _context.SaveChangesAsync();

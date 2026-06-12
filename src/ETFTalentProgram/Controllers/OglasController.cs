@@ -7,16 +7,19 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using ETFTalentProgram.Data;
 using ETFTalentProgram.Models;
+using ETFTalentProgram.Services;
 
 namespace ETFTalentProgram.Controllers
 {
     public class OglasController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly ILogService _logService;
 
-        public OglasController(ApplicationDbContext context)
+        public OglasController(ApplicationDbContext context, ILogService logService)
         {
             _context = context;
+            _logService = logService;
         }
 
         // GET: Oglas
@@ -63,6 +66,7 @@ namespace ETFTalentProgram.Controllers
             {
                 _context.Add(oglas);
                 await _context.SaveChangesAsync();
+                await _logService.InfoAsync("OGLAS_KREIRAN", $"Kreiran oglas ID {oglas.Id}: {oglas.Naslov}.");
                 return RedirectToAction(nameof(Index));
             }
             ViewData["FirmaId"] = new SelectList(_context.Firme, "Id", "Id", oglas.FirmaId);
@@ -104,6 +108,7 @@ namespace ETFTalentProgram.Controllers
                 {
                     _context.Update(oglas);
                     await _context.SaveChangesAsync();
+                    await _logService.InfoAsync("OGLAS_AZURIRAN", $"Azuriran oglas ID {oglas.Id}: {oglas.Naslov}.");
                 }
                 catch (DbUpdateConcurrencyException)
                 {
@@ -150,6 +155,7 @@ namespace ETFTalentProgram.Controllers
             if (oglas != null)
             {
                 _context.Oglasi.Remove(oglas);
+                await _logService.WarningAsync("OGLAS_OBRISAN", $"Obrisan oglas ID {oglas.Id}: {oglas.Naslov}.");
             }
 
             await _context.SaveChangesAsync();

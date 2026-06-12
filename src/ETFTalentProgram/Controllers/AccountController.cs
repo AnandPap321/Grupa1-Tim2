@@ -1,6 +1,7 @@
 using ETFTalentProgram.Constants;
 using ETFTalentProgram.Helpers;
 using ETFTalentProgram.Models;
+using ETFTalentProgram.Services;
 using ETFTalentProgram.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -12,13 +13,16 @@ namespace ETFTalentProgram.Controllers
     {
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly SignInManager<ApplicationUser> _signInManager;
+        private readonly ILogService _logService;
 
         public AccountController(
             UserManager<ApplicationUser> userManager,
-            SignInManager<ApplicationUser> signInManager)
+            SignInManager<ApplicationUser> signInManager,
+            ILogService logService)
         {
             _userManager = userManager;
             _signInManager = signInManager;
+            _logService = logService;
         }
 
         [HttpGet]
@@ -54,6 +58,7 @@ namespace ETFTalentProgram.Controllers
             var user = await _userManager.FindByEmailAsync(model.Email);
             if (user == null)
             {
+                await _logService.WarningAsync("LOGIN_NEUSPJESAN", $"Pokusaj prijave za nepostojeci email: {model.Email}.");
                 ModelState.AddModelError(string.Empty, "Neispravan email ili lozinka.");
                 return View(model);
             }
@@ -66,12 +71,14 @@ namespace ETFTalentProgram.Controllers
 
             if (!result.Succeeded)
             {
+                await _logService.WarningAsync("LOGIN_NEUSPJESAN", $"Neuspjesna prijava za korisnika: {model.Email}.");
                 ModelState.AddModelError(string.Empty, "Neispravan email ili lozinka.");
                 return View(model);
             }
 
             user.DatumZadnjePrijave = DateTime.UtcNow;
             await _userManager.UpdateAsync(user);
+            await _logService.InfoAsync("LOGIN_USPJESAN", $"Uspjesna prijava korisnika: {model.Email}.");
 
             if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
                 return Redirect(returnUrl);
@@ -106,6 +113,7 @@ namespace ETFTalentProgram.Controllers
                 return View(model);
             }
 
+            await _logService.InfoAsync("REGISTRACIJA_STUDENT", $"Registrovan student: {model.Email}.");
             return RedirectToAction(nameof(Login));
         }
 
@@ -131,6 +139,7 @@ namespace ETFTalentProgram.Controllers
                 return View(model);
             }
 
+            await _logService.InfoAsync("REGISTRACIJA_FIRMA", $"Registrovana firma: {model.Email}.");
             return RedirectToAction(nameof(Login));
         }
 
@@ -138,6 +147,7 @@ namespace ETFTalentProgram.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Logout()
         {
+            await _logService.InfoAsync("LOGOUT", "Korisnik se odjavio iz sistema.");
             await _signInManager.SignOutAsync();
             return RedirectToAction("Index", "Home");
         }

@@ -1,6 +1,7 @@
 using ETFTalentProgram.Constants;
 using ETFTalentProgram.Data;
 using ETFTalentProgram.Models;
+using ETFTalentProgram.Services;
 using ETFTalentProgram.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -12,10 +13,12 @@ namespace ETFTalentProgram.Controllers
     public class StudentProfilController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly ILogService _logService;
 
-        public StudentProfilController(ApplicationDbContext context)
+        public StudentProfilController(ApplicationDbContext context, ILogService logService)
         {
             _context = context;
+            _logService = logService;
         }
 
         [Authorize(Roles = AppRoles.Student)]
@@ -53,6 +56,7 @@ namespace ETFTalentProgram.Controllers
                 : StatusVerifikacije.NA_CEKANJU;
 
             await _context.SaveChangesAsync();
+            await _logService.InfoAsync("STUDENT_PROFIL_AZURIRAN", $"Azuriran profil studenta ID {profil.StudentId}.");
             TempData["StatusMessage"] = "Profil je uspješno sačuvan.";
 
             return RedirectToAction(nameof(Index));

@@ -1,6 +1,7 @@
 ﻿using ETFTalentProgram.Constants;
 using ETFTalentProgram.Data;
 using ETFTalentProgram.Models;
+using ETFTalentProgram.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -12,10 +13,12 @@ namespace ETFTalentProgram.Controllers
     public class FirmaProfilController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly ILogService _logService;
 
-        public FirmaProfilController(ApplicationDbContext context)
+        public FirmaProfilController(ApplicationDbContext context, ILogService logService)
         {
             _context = context;
+            _logService = logService;
         }
 
         // GET: FirmaProfil
@@ -62,6 +65,7 @@ namespace ETFTalentProgram.Controllers
             {
                 _context.Add(firmaProfil);
                 await _context.SaveChangesAsync();
+                await _logService.InfoAsync("FIRMA_PROFIL_KREIRAN", $"Kreiran profil firme ID {firmaProfil.FirmaId}.");
                 return RedirectToAction(nameof(Index));
             }
             ViewData["FirmaId"] = new SelectList(_context.Firme, "Id", "Id", firmaProfil.FirmaId);
@@ -104,6 +108,7 @@ namespace ETFTalentProgram.Controllers
                 {
                     _context.Update(firmaProfil);
                     await _context.SaveChangesAsync();
+                    await _logService.InfoAsync("FIRMA_PROFIL_AZURIRAN", $"Azuriran profil firme ID {firmaProfil.FirmaId}.");
                     TempData["StatusMessage"] = "Profil je uspješno ažuriran.";
                     return RedirectToAction(nameof(Edit));
                 }
@@ -151,6 +156,7 @@ namespace ETFTalentProgram.Controllers
             if (firmaProfil != null)
             {
                 _context.FirmaProfili.Remove(firmaProfil);
+                await _logService.WarningAsync("FIRMA_PROFIL_OBRISAN", $"Obrisan profil firme ID {firmaProfil.FirmaId}.");
             }
 
             await _context.SaveChangesAsync();

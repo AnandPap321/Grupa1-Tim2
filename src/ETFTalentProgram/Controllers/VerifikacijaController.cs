@@ -1,6 +1,7 @@
 ﻿using ETFTalentProgram.Constants;
 using ETFTalentProgram.Data;
 using ETFTalentProgram.Models;
+using ETFTalentProgram.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -12,10 +13,12 @@ namespace ETFTalentProgram.Controllers
     public class VerifikacijaController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly ILogService _logService;
 
-        public VerifikacijaController(ApplicationDbContext context)
+        public VerifikacijaController(ApplicationDbContext context, ILogService logService)
         {
             _context = context;
+            _logService = logService;
         }
 
         // GET: Verifikacija/Lista
@@ -70,6 +73,7 @@ namespace ETFTalentProgram.Controllers
             {
                 _context.Add(verifikacija);
                 await _context.SaveChangesAsync();
+                await _logService.InfoAsync("VERIFIKACIJA_KREIRANA", $"Kreirana verifikacija ID {verifikacija.Id} za studenta ID {verifikacija.StudentId}.");
                 return RedirectToAction(nameof(Index));
             }
             ViewData["ReferentId"] = new SelectList(_context.Referenti, "Id", "Id", verifikacija.ReferentId);
@@ -113,6 +117,7 @@ namespace ETFTalentProgram.Controllers
                 {
                     _context.Update(verifikacija);
                     await _context.SaveChangesAsync();
+                    await _logService.InfoAsync("VERIFIKACIJA_AZURIRANA", $"Azurirana verifikacija ID {verifikacija.Id} sa statusom {verifikacija.StatusVerifikacije}.");
                 }
                 catch (DbUpdateConcurrencyException)
                 {
@@ -161,6 +166,7 @@ namespace ETFTalentProgram.Controllers
             if (verifikacija != null)
             {
                 _context.Verifikacije.Remove(verifikacija);
+                await _logService.WarningAsync("VERIFIKACIJA_OBRISANA", $"Obrisana verifikacija ID {verifikacija.Id}.");
             }
 
             await _context.SaveChangesAsync();
