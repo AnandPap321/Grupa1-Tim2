@@ -5,11 +5,12 @@ using ETFTalentProgram.Services;
 using ETFTalentProgram.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 
 namespace ETFTalentProgram.Controllers
 {
-    [Authorize(Roles = $"{AppRoles.Student},{AppRoles.Firma}")]
+    [Authorize(Roles = $"{AppRoles.Student},{AppRoles.Firma},{AppRoles.Referent}")]
     public class StudentProfilController : Controller
     {
         private readonly ApplicationDbContext _context;
@@ -74,7 +75,7 @@ namespace ETFTalentProgram.Controllers
             }
 
             var isOwner = User.IsInRole(AppRoles.Student) && IsCurrentStudent(profil.Student);
-            var canView = isOwner || User.IsInRole(AppRoles.Firma);
+            var canView = isOwner || User.IsInRole(AppRoles.Firma) || User.IsInRole(AppRoles.Referent);
             if (!canView)
             {
                 return Forbid();
@@ -86,6 +87,70 @@ namespace ETFTalentProgram.Controllers
                 canSendOffer: User.IsInRole(AppRoles.Firma));
 
             return View(model);
+        }
+
+        [Authorize(Roles = AppRoles.Referent)]
+        public async Task<IActionResult> Edit(long? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var profil = await _context.StudentProfili
+                .Include(p => p.Student)
+                .FirstOrDefaultAsync(p => p.Id == id);
+
+            if (profil == null)
+            {
+                return NotFound();
+            }
+
+            ViewData["StudentId"] = new SelectList(_context.Studenti, "Id", "Email", profil.StudentId);
+            return View(profil);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles = AppRoles.Referent)]
+        public async Task<IActionResult> Edit(long id, [Bind("Id,Rang,Biografija,Vjestine,Projekti,PreferiraneLokacije,PreferiraneTehnologije,DostupanOd,DatumAzuriranja,StatusVerifikacije,StudentId")] StudentProfil profil)
+        {
+            if (id != profil.Id)
+            {
+                return NotFound();
+            }
+
+            if (!ModelState.IsValid)
+            {
+                ViewData["StudentId"] = new SelectList(_context.Studenti, "Id", "Email", profil.StudentId);
+                return View(profil);
+            }
+
+            var existingProfil = await _context.StudentProfili
+                .Include(p => p.Student)
+                .FirstOrDefaultAsync(p => p.Id == id);
+
+            if (existingProfil == null)
+            {
+                return NotFound();
+            }
+
+            existingProfil.Rang = profil.Rang;
+            existingProfil.Biografija = NormalizeText(profil.Biografija);
+            existingProfil.Vjestine = NormalizeCommaList(profil.Vjestine);
+            existingProfil.Projekti = NormalizeProjects(profil.Projekti);
+            existingProfil.PreferiraneLokacije = NormalizeCommaList(profil.PreferiraneLokacije);
+            existingProfil.PreferiraneTehnologije = NormalizeCommaList(profil.PreferiraneTehnologije);
+            existingProfil.DostupanOd = profil.DostupanOd == default ? DateTime.Today : profil.DostupanOd;
+            existingProfil.DatumAzuriranja = DateTime.UtcNow;
+            existingProfil.StatusVerifikacije = profil.StatusVerifikacije;
+            existingProfil.Student.Verificiran = profil.StatusVerifikacije == StatusVerifikacije.VERIFICIRAN;
+
+            await _context.SaveChangesAsync();
+            await _logService.InfoAsync("STUDENT_PROFIL_REFERENT_AZURIRAN", $"Referent je azurirao profil studenta ID {existingProfil.StudentId} sa statusom {existingProfil.StatusVerifikacije}.");
+            TempData["StatusMessage"] = "Studentski profil je azuriran.";
+
+            return RedirectToAction("Index", "Verifikacija");
         }
 
         [Authorize(Roles = AppRoles.Firma)]

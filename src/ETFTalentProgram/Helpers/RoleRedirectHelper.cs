@@ -13,7 +13,7 @@ namespace ETFTalentProgram.Helpers
                 return "/ReferentKorisnici";
 
             if (roles.Contains(AppRoles.Firma))
-                return "/FirmaProfil";
+                return "/Firma";
 
             if (roles.Contains(AppRoles.Student))
                 return "/Student";

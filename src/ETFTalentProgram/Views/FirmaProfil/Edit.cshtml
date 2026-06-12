@@ -88,6 +88,18 @@
                                 <select asp-for="FirmaId" class="form-control" asp-items="ViewBag.FirmaId"></select>
                                 <span asp-validation-for="FirmaId" class="text-danger"></span>
                             </div>
+                            @if (User.IsInRole(ETFTalentProgram.Constants.AppRoles.Referent))
+                            {
+                                <div class="col-md-6">
+                                    <label asp-for="StatusVerifikacije" class="form-label fw-semibold">Status verifikacije</label>
+                                    <select asp-for="StatusVerifikacije" class="form-control" asp-items="Html.GetEnumSelectList<ETFTalentProgram.Models.StatusVerifikacije>()"></select>
+                                    <span asp-validation-for="StatusVerifikacije" class="text-danger"></span>
+                                </div>
+                            }
+                            else
+                            {
+                                <input type="hidden" asp-for="StatusVerifikacije" />
+                            }
                         </div>
                     </div>
                 </section>
@@ -95,7 +107,14 @@
                 <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
 
                 <div class="d-flex justify-content-end gap-2">
-                    <a asp-action="Index" class="btn btn-outline-secondary">Otkaži</a>
+                    @if (User.IsInRole(ETFTalentProgram.Constants.AppRoles.Referent))
+                    {
+                        <a asp-controller="Verifikacija" asp-action="Index" class="btn btn-outline-secondary">Nazad</a>
+                    }
+                    else
+                    {
+                        <a asp-action="Index" class="btn btn-outline-secondary">Otkaži</a>
+                    }
                     <button type="submit" class="btn btn-primary">Sačuvaj izmjene</button>
                 </div>
             </form>

@@ -1,113 +1,93 @@
-﻿@model IEnumerable<ETFTalentProgram.Models.Firma>
+@model ETFTalentProgram.ViewModels.FirmaPocetnaViewModel
 
 @{
-    ViewData["Title"] = "Index";
+    ViewData["Title"] = "Firma";
 }
 
-<h1>Index</h1>
+@await Html.PartialAsync("_FirmaNavigation")
 
-<p>
-    <a asp-action="Create">Create New</a>
-</p>
-<table class="table">
-    <thead>
-        <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.Naziv)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.OpisFirme)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Lokacija)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Website)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.KontaktEmail)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.IndustrijskiSektor)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.VelicinaFirme)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.GodinaOsnivanja)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Email)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Lozinka)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Uloga)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Status)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.DatumRegistracije)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.DatumZadnjePrijave)
-            </th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-@foreach (var item in Model) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.Naziv)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.OpisFirme)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Lokacija)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Website)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.KontaktEmail)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.IndustrijskiSektor)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.VelicinaFirme)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.GodinaOsnivanja)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Email)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Lozinka)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Uloga)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Status)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.DatumRegistracije)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.DatumZadnjePrijave)
-            </td>
-            <td>
-                <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
-            </td>
-        </tr>
-}
-    </tbody>
-</table>
+<div class="mx-auto mb-5" style="max-width: 920px;">
+    @if (TempData["StatusMessage"] is string message)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @message
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <div class="row g-3 mb-4">
+        <div class="col-md-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <div class="text-muted small">Status profila</div>
+                    <div class="h4 mb-0">@Model.StatusVerifikacije</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <div class="text-muted small">Aktivni oglasi</div>
+                    <div class="h4 mb-0">@Model.BrojAktivnihOglasa</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <div class="text-muted small">Prijave na oglase</div>
+                    <div class="h4 mb-0">@Model.BrojPrijava</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-body">
+            <div class="d-flex flex-column flex-md-row justify-content-between gap-3">
+                <div>
+                    <h2 class="h5 fw-bold mb-1">@Model.Firma.Naziv</h2>
+                    <p class="text-muted mb-0">@Model.Profil?.KratakOpis</p>
+                </div>
+                <div class="d-flex gap-2 align-items-start">
+                    <a asp-action="Profil_firme" class="btn btn-outline-primary">Uredi profil</a>
+                    <a asp-action="Objavi_oglas" class="btn btn-primary">Objavi oglas</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h2 class="h5 fw-bold mb-0">Najnoviji oglasi</h2>
+                <span class="text-muted small">Ukupno: @Model.BrojOglasa</span>
+            </div>
+
+            @if (!Model.NajnovijiOglasi.Any())
+            {
+                <div class="text-muted">Još nemate objavljenih oglasa.</div>
+            }
+            else
+            {
+                <div class="list-group list-group-flush">
+                    @foreach (var oglas in Model.NajnovijiOglasi)
+                    {
+                        <div class="list-group-item px-0">
+                            <div class="d-flex flex-column flex-md-row justify-content-between gap-2">
+                                <div>
+                                    <div class="fw-semibold">@oglas.Naslov</div>
+                                    <div class="text-muted small">@oglas.Lokacija · @oglas.TipOglasa · @oglas.TipAngazmana</div>
+                                </div>
+                                <div class="text-md-end">
+                                    <span class="badge text-bg-secondary">@oglas.StatusOglasa</span>
+                                    <div class="text-muted small">Rok: @oglas.RokPrijave.ToString("dd.MM.yyyy")</div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+    </div>
+</div>

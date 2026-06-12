@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace ETFTalentProgram.Data.Migrations
 {
     /// <inheritdoc />
-    public partial class RemoveUlogaStatusFromApplicationUser : Migration
+    public partial class SvjezeStanje : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)

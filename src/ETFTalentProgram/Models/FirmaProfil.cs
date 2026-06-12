@@ -15,6 +15,7 @@ namespace ETFTalentProgram.Models
         public string Logotip { get; set; }
         public string TehnologijeStack { get; set; }
         public DateTime DatumAzuriranja { get; set; }
+        public StatusVerifikacije StatusVerifikacije { get; set; } = StatusVerifikacije.NA_CEKANJU;
 
         [ForeignKey("Firma")]
         public long FirmaId { get; set; }

@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ETFTalentProgram.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260611130759_RemoveUlogaStatusFromApplicationUser")]
-    partial class RemoveUlogaStatusFromApplicationUser
+    [Migration("20260612114250_AddFirmaProfilStatusVerifikacije")]
+    partial class AddFirmaProfilStatusVerifikacije
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -203,6 +203,9 @@ namespace ETFTalentProgram.Data.Migrations
                     b.Property<string>("PunOpis")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("StatusVerifikacije")
+                        .HasColumnType("int");
 
                     b.Property<string>("TehnologijeStack")
                         .IsRequired()

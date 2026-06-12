@@ -5,8 +5,11 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authorization;
+using ETFTalentProgram.Constants;
 using ETFTalentProgram.Data;
 using ETFTalentProgram.Models;
+using ETFTalentProgram.ViewModels;
 
 namespace ETFTalentProgram.Controllers
 {
@@ -20,12 +23,32 @@ namespace ETFTalentProgram.Controllers
         }
 
         // GET: Firma
+        [Authorize(Roles = AppRoles.Firma)]
         public async Task<IActionResult> Index()
         {
-            return View(await _context.Firme.ToListAsync());
+            var firma = await GetOrCreateCurrentFirmaAsync();
+            var profil = await GetOrCreateCurrentFirmaProfileAsync(firma);
+            var najnovijiOglasi = await _context.Oglasi
+                .Where(o => o.FirmaId == firma.Id)
+                .OrderByDescending(o => o.DatumObjave)
+                .Take(5)
+                .ToListAsync();
+
+            var model = new FirmaPocetnaViewModel
+            {
+                Firma = firma,
+                Profil = profil,
+                NajnovijiOglasi = najnovijiOglasi,
+                BrojOglasa = await _context.Oglasi.CountAsync(o => o.FirmaId == firma.Id),
+                BrojAktivnihOglasa = await _context.Oglasi.CountAsync(o => o.FirmaId == firma.Id && o.StatusOglasa == StatusOglasa.AKTIVAN),
+                BrojPrijava = await _context.PrijaveOglasa.CountAsync(p => p.Oglas.FirmaId == firma.Id)
+            };
+
+            return View(model);
         }
 
         // GET: Firma/Details/5
+        [Authorize(Roles = AppRoles.Referent)]
         public async Task<IActionResult> Details(long? id)
         {
             if (id == null)
@@ -44,6 +67,7 @@ namespace ETFTalentProgram.Controllers
         }
 
         // GET: Firma/Create
+        [Authorize(Roles = AppRoles.Referent)]
         public IActionResult Create()
         {
             return View();
@@ -54,6 +78,7 @@ namespace ETFTalentProgram.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = AppRoles.Referent)]
         public async Task<IActionResult> Create([Bind("Naziv,OpisFirme,Lokacija,Website,KontaktEmail,IndustrijskiSektor,VelicinaFirme,GodinaOsnivanja,Id,Email,Lozinka,Uloga,Status,DatumRegistracije,DatumZadnjePrijave")] Firma firma)
         {
             if (ModelState.IsValid)
@@ -66,6 +91,7 @@ namespace ETFTalentProgram.Controllers
         }
 
         // GET: Firma/Edit/5
+        [Authorize(Roles = AppRoles.Referent)]
         public async Task<IActionResult> Edit(long? id)
         {
             if (id == null)
@@ -86,6 +112,7 @@ namespace ETFTalentProgram.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = AppRoles.Referent)]
         public async Task<IActionResult> Edit(long id, [Bind("Naziv,OpisFirme,Lokacija,Website,KontaktEmail,IndustrijskiSektor,VelicinaFirme,GodinaOsnivanja,Id,Email,Lozinka,Uloga,Status,DatumRegistracije,DatumZadnjePrijave")] Firma firma)
         {
             if (id != firma.Id)
@@ -117,6 +144,7 @@ namespace ETFTalentProgram.Controllers
         }
 
         // GET: Firma/Delete/5
+        [Authorize(Roles = AppRoles.Referent)]
         public async Task<IActionResult> Delete(long? id)
         {
             if (id == null)
@@ -137,6 +165,7 @@ namespace ETFTalentProgram.Controllers
         // POST: Firma/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = AppRoles.Referent)]
         public async Task<IActionResult> DeleteConfirmed(long id)
         {
             var firma = await _context.Firme.FindAsync(id);
@@ -155,40 +184,41 @@ namespace ETFTalentProgram.Controllers
         }
 
         // GET: Firma/Profil_firme
+        [Authorize(Roles = AppRoles.Firma)]
         public async Task<IActionResult> Profil_firme()
         {
-            var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
-            if (string.IsNullOrEmpty(userId))
-            {
-                return NotFound();
-            }
+            var firma = await GetOrCreateCurrentFirmaAsync();
+            var firmaProfil = await GetOrCreateCurrentFirmaProfileAsync(firma);
 
-            var firma = await _context.Firme.FirstOrDefaultAsync(f => f.Email == User.Identity.Name);
-            if (firma == null)
-            {
-                return NotFound();
-            }
-
-            var firmaProfil = await _context.FirmaProfili.FirstOrDefaultAsync(f => f.FirmaId == firma.Id);
-            if (firmaProfil == null)
-            {
-                return NotFound();
-            }
-
-            ViewData["FirmaId"] = new SelectList(_context.Firme, "Id", "Id", firmaProfil.FirmaId);
             return View(firmaProfil);
         }
 
         // POST: Firma/Profil_firme
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = AppRoles.Firma)]
         public async Task<IActionResult> Profil_firme([Bind("Id,KratakOpis,PunOpis,Lokacija,Website,KontaktEmail,Logotip,TehnologijeStack,DatumAzuriranja,FirmaId")] FirmaProfil firmaProfil)
         {
             if (ModelState.IsValid)
             {
                 try
                 {
-                    _context.Update(firmaProfil);
+                    var firma = await GetOrCreateCurrentFirmaAsync();
+                    var existingProfil = await _context.FirmaProfili.FirstOrDefaultAsync(f => f.Id == firmaProfil.Id && f.FirmaId == firma.Id);
+                    if (existingProfil == null)
+                    {
+                        return Forbid();
+                    }
+
+                    existingProfil.KratakOpis = firmaProfil.KratakOpis;
+                    existingProfil.PunOpis = firmaProfil.PunOpis;
+                    existingProfil.Lokacija = firmaProfil.Lokacija;
+                    existingProfil.Website = firmaProfil.Website;
+                    existingProfil.KontaktEmail = firmaProfil.KontaktEmail;
+                    existingProfil.Logotip = firmaProfil.Logotip;
+                    existingProfil.TehnologijeStack = firmaProfil.TehnologijeStack;
+                    existingProfil.DatumAzuriranja = DateTime.UtcNow;
+                    existingProfil.StatusVerifikacije = StatusVerifikacije.NA_CEKANJU;
                     await _context.SaveChangesAsync();
                     TempData["StatusMessage"] = "Profil je uspješno ažuriran.";
                     return RedirectToAction(nameof(Profil_firme));
@@ -205,7 +235,6 @@ namespace ETFTalentProgram.Controllers
                     }
                 }
             }
-            ViewData["FirmaId"] = new SelectList(_context.Firme, "Id", "Id", firmaProfil.FirmaId);
             return View(firmaProfil);
         }
 
@@ -215,26 +244,103 @@ namespace ETFTalentProgram.Controllers
         }
 
         // GET: Firma/Objavi_oglas
+        [Authorize(Roles = AppRoles.Firma)]
         public IActionResult Objavi_oglas()
         {
-            ViewData["FirmaId"] = new SelectList(_context.Firme, "Id", "Id");
-            return View();
+            return View(new Oglas
+            {
+                DatumObjave = DateTime.Today,
+                RokPrijave = DateTime.Today.AddDays(30),
+                StatusOglasa = StatusOglasa.AKTIVAN
+            });
         }
 
         // POST: Firma/Objavi_oglas
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = AppRoles.Firma)]
         public async Task<IActionResult> Objavi_oglas([Bind("Id,Naslov,Opis,Tehnologije,RokPrijave,DatumObjave,TipOglasa,TipAngazmana,StatusOglasa,Lokacija,MinRang,MinProsjek,Kompenzacija,FirmaId")] Oglas oglas)
         {
             if (ModelState.IsValid)
             {
+                var firma = await GetOrCreateCurrentFirmaAsync();
+                oglas.FirmaId = firma.Id;
+                oglas.DatumObjave = oglas.DatumObjave == default ? DateTime.Today : oglas.DatumObjave;
+                oglas.RokPrijave = oglas.RokPrijave == default ? DateTime.Today.AddDays(30) : oglas.RokPrijave;
                 _context.Add(oglas);
                 await _context.SaveChangesAsync();
                 TempData["StatusMessage"] = "Oglas je uspješno objavljen.";
-                return RedirectToAction(nameof(Objavi_oglas));
+                return RedirectToAction(nameof(Index));
             }
-            ViewData["FirmaId"] = new SelectList(_context.Firme, "Id", "Id", oglas.FirmaId);
             return View(oglas);
+        }
+
+        private async Task<Firma> GetOrCreateCurrentFirmaAsync()
+        {
+            var email = User.Identity?.Name ?? string.Empty;
+            var firma = await _context.Firme.FirstOrDefaultAsync(f => f.Email == email);
+
+            if (firma != null)
+            {
+                return firma;
+            }
+
+            firma = new Firma
+            {
+                Naziv = GetNameFromEmail(email),
+                OpisFirme = string.Empty,
+                Lokacija = string.Empty,
+                Website = string.Empty,
+                KontaktEmail = email,
+                IndustrijskiSektor = string.Empty,
+                VelicinaFirme = VelicinaFirme.MALA,
+                GodinaOsnivanja = DateTime.Today.Year,
+                Email = email,
+                Lozinka = string.Empty,
+                Uloga = Uloga.FIRMA,
+                Status = Status.AKTIVAN,
+                DatumRegistracije = DateTime.UtcNow,
+                DatumZadnjePrijave = DateTime.UtcNow
+            };
+
+            _context.Firme.Add(firma);
+            await _context.SaveChangesAsync();
+
+            return firma;
+        }
+
+        private async Task<FirmaProfil> GetOrCreateCurrentFirmaProfileAsync(Firma firma)
+        {
+            var profil = await _context.FirmaProfili.FirstOrDefaultAsync(f => f.FirmaId == firma.Id);
+            if (profil != null)
+            {
+                return profil;
+            }
+
+            profil = new FirmaProfil
+            {
+                FirmaId = firma.Id,
+                KratakOpis = string.Empty,
+                PunOpis = string.Empty,
+                Lokacija = firma.Lokacija,
+                Website = firma.Website,
+                KontaktEmail = firma.KontaktEmail,
+                Logotip = string.Empty,
+                TehnologijeStack = string.Empty,
+                DatumAzuriranja = DateTime.UtcNow,
+                StatusVerifikacije = StatusVerifikacije.NA_CEKANJU
+            };
+
+            _context.FirmaProfili.Add(profil);
+            await _context.SaveChangesAsync();
+
+            return profil;
+        }
+
+        private static string GetNameFromEmail(string email)
+        {
+            var atIndex = email.IndexOf('@');
+            return atIndex > 0 ? email[..atIndex] : email;
         }
     }
 }

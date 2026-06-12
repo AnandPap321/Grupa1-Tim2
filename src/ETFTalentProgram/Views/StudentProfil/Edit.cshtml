@@ -55,7 +55,7 @@
             </div>
             <div class="form-group">
                 <label asp-for="StatusVerifikacije" class="control-label"></label>
-                <select asp-for="StatusVerifikacije" class="form-control"></select>
+                <select asp-for="StatusVerifikacije" class="form-control" asp-items="Html.GetEnumSelectList<ETFTalentProgram.Models.StatusVerifikacije>()"></select>
                 <span asp-validation-for="StatusVerifikacije" class="text-danger"></span>
             </div>
             <div class="form-group">
@@ -64,14 +64,14 @@
                 <span asp-validation-for="StudentId" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <input type="submit" value="Save" class="btn btn-primary" />
+                <input type="submit" value="Sacuvaj" class="btn btn-primary" />
             </div>
         </form>
     </div>
 </div>
 
 <div>
-    <a asp-action="Index">Back to List</a>
+    <a asp-controller="Verifikacija" asp-action="Index">Nazad na verifikacije</a>
 </div>
 
 @section Scripts {

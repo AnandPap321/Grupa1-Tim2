@@ -18,10 +18,11 @@
     <div class="card">
         <div class="card-body">
             <h2 class="h5 fw-bold mb-3">Osnovne informacije</h2>
-            <p class="text-muted">Ažurirajte informacije o vašoj firmi</p>
+            <p class="text-muted">Azurirajte informacije o vasoj firmi</p>
 
             <form asp-action="Profil_firme" method="post" class="d-grid gap-4">
                 <input type="hidden" asp-for="Id" />
+                <input type="hidden" asp-for="FirmaId" />
 
                 <section class="card">
                     <div class="card-body">
@@ -29,12 +30,12 @@
                         <div class="row g-3">
                             <div class="col-12">
                                 <label asp-for="KratakOpis" class="form-label fw-semibold">Kratak opis</label>
-                                <input asp-for="KratakOpis" class="form-control" placeholder="Npr. Vodečica IT kompanija..." />
+                                <input asp-for="KratakOpis" class="form-control" placeholder="Npr. vodeca IT kompanija..." />
                                 <span asp-validation-for="KratakOpis" class="text-danger"></span>
                             </div>
                             <div class="col-12">
                                 <label asp-for="PunOpis" class="form-label fw-semibold">Puni opis</label>
-                                <textarea asp-for="PunOpis" class="form-control" rows="5" placeholder="Detaljniji opis vašeg poslovanja..."></textarea>
+                                <textarea asp-for="PunOpis" class="form-control" rows="5" placeholder="Detaljniji opis vaseg poslovanja..."></textarea>
                                 <span asp-validation-for="PunOpis" class="text-danger"></span>
                             </div>
                         </div>
@@ -79,14 +80,9 @@
                                 <span asp-validation-for="TehnologijeStack" class="text-danger"></span>
                             </div>
                             <div class="col-md-6">
-                                <label asp-for="DatumAzuriranja" class="form-label fw-semibold">Datum ažuriranja</label>
+                                <label asp-for="DatumAzuriranja" class="form-label fw-semibold">Datum azuriranja</label>
                                 <input asp-for="DatumAzuriranja" type="date" class="form-control" />
                                 <span asp-validation-for="DatumAzuriranja" class="text-danger"></span>
-                            </div>
-                            <div class="col-md-6">
-                                <label asp-for="FirmaId" class="form-label fw-semibold">Firma</label>
-                                <select asp-for="FirmaId" class="form-control" asp-items="ViewBag.FirmaId"></select>
-                                <span asp-validation-for="FirmaId" class="text-danger"></span>
                             </div>
                         </div>
                     </div>
@@ -95,8 +91,8 @@
                 <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
 
                 <div class="d-flex justify-content-end gap-2">
-                    <a asp-action="Index" class="btn btn-outline-secondary">Otkaži</a>
-                    <button type="submit" class="btn btn-primary">Sačuvaj izmjene</button>
+                    <a asp-action="Index" class="btn btn-outline-secondary">Otkazi</a>
+                    <button type="submit" class="btn btn-primary">Sacuvaj izmjene</button>
                 </div>
             </form>
         </div>

@@ -5,8 +5,11 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authorization;
+using ETFTalentProgram.Constants;
 using ETFTalentProgram.Data;
 using ETFTalentProgram.Models;
+using ETFTalentProgram.ViewModels;
 
 namespace ETFTalentProgram.Controllers
 {
@@ -20,12 +23,33 @@ namespace ETFTalentProgram.Controllers
         }
 
         // GET: Student
+        [Authorize(Roles = AppRoles.Student)]
         public async Task<IActionResult> Index()
         {
-            return View(await _context.Studenti.ToListAsync());
+            var student = await GetOrCreateCurrentStudentAsync();
+            var profil = await GetOrCreateCurrentStudentProfileAsync(student);
+            var najnovijiOglasi = await _context.Oglasi
+                .Include(o => o.Firma)
+                .Where(o => o.StatusOglasa == StatusOglasa.AKTIVAN)
+                .OrderByDescending(o => o.DatumObjave)
+                .Take(5)
+                .ToListAsync();
+
+            var model = new StudentPocetnaViewModel
+            {
+                Student = student,
+                Profil = profil,
+                NajnovijiOglasi = najnovijiOglasi,
+                BrojPrijava = await _context.PrijaveOglasa.CountAsync(p => p.StudentId == student.Id),
+                BrojPonuda = await _context.Ponude.CountAsync(p => p.PrimalacId == student.Id),
+                BrojProjekata = CountProjectItems(profil.Projekti)
+            };
+
+            return View(model);
         }
 
         // GET: Student/Details/5
+        [Authorize(Roles = AppRoles.Referent)]
         public async Task<IActionResult> Details(long? id)
         {
             if (id == null)
@@ -44,6 +68,7 @@ namespace ETFTalentProgram.Controllers
         }
 
         // GET: Student/Create
+        [Authorize(Roles = AppRoles.Referent)]
         public IActionResult Create()
         {
             return View();
@@ -54,6 +79,7 @@ namespace ETFTalentProgram.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = AppRoles.Referent)]
         public async Task<IActionResult> Create([Bind("Ime,Prezime,BrIndeksa,GodinaStudija,GodinaUpisa,ProsjekOcjena,Verificiran,Id,Email,Lozinka,Uloga,Status,DatumRegistracije,DatumZadnjePrijave")] Student student)
         {
             if (ModelState.IsValid)
@@ -66,6 +92,7 @@ namespace ETFTalentProgram.Controllers
         }
 
         // GET: Student/Edit/5
+        [Authorize(Roles = AppRoles.Referent)]
         public async Task<IActionResult> Edit(long? id)
         {
             if (id == null)
@@ -86,6 +113,7 @@ namespace ETFTalentProgram.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = AppRoles.Referent)]
         public async Task<IActionResult> Edit(long id, [Bind("Ime,Prezime,BrIndeksa,GodinaStudija,GodinaUpisa,ProsjekOcjena,Verificiran,Id,Email,Lozinka,Uloga,Status,DatumRegistracije,DatumZadnjePrijave")] Student student)
         {
             if (id != student.Id)
@@ -117,6 +145,7 @@ namespace ETFTalentProgram.Controllers
         }
 
         // GET: Student/Delete/5
+        [Authorize(Roles = AppRoles.Referent)]
         public async Task<IActionResult> Delete(long? id)
         {
             if (id == null)
@@ -137,6 +166,7 @@ namespace ETFTalentProgram.Controllers
         // POST: Student/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = AppRoles.Referent)]
         public async Task<IActionResult> DeleteConfirmed(long id)
         {
             var student = await _context.Studenti.FindAsync(id);
@@ -152,6 +182,80 @@ namespace ETFTalentProgram.Controllers
         private bool StudentExists(long id)
         {
             return _context.Studenti.Any(e => e.Id == id);
+        }
+
+        private async Task<Student> GetOrCreateCurrentStudentAsync()
+        {
+            var email = User.Identity?.Name ?? string.Empty;
+            var student = await _context.Studenti.FirstOrDefaultAsync(s => s.Email == email);
+
+            if (student != null)
+            {
+                return student;
+            }
+
+            student = new Student
+            {
+                Ime = GetNameFromEmail(email),
+                Prezime = string.Empty,
+                BrIndeksa = string.Empty,
+                GodinaStudija = 0,
+                GodinaUpisa = DateTime.Today.Year,
+                ProsjekOcjena = 0,
+                Verificiran = false,
+                Email = email,
+                Lozinka = string.Empty,
+                Uloga = Uloga.STUDENT,
+                Status = Status.AKTIVAN,
+                DatumRegistracije = DateTime.UtcNow,
+                DatumZadnjePrijave = DateTime.UtcNow
+            };
+
+            _context.Studenti.Add(student);
+            await _context.SaveChangesAsync();
+
+            return student;
+        }
+
+        private async Task<StudentProfil> GetOrCreateCurrentStudentProfileAsync(Student student)
+        {
+            var profil = await _context.StudentProfili.FirstOrDefaultAsync(p => p.StudentId == student.Id);
+            if (profil != null)
+            {
+                return profil;
+            }
+
+            profil = new StudentProfil
+            {
+                StudentId = student.Id,
+                Rang = 0,
+                Biografija = string.Empty,
+                Vjestine = string.Empty,
+                PreferiraneTehnologije = string.Empty,
+                Projekti = string.Empty,
+                PreferiraneLokacije = string.Empty,
+                DostupanOd = DateTime.Today,
+                DatumAzuriranja = DateTime.UtcNow,
+                StatusVerifikacije = StatusVerifikacije.NA_CEKANJU
+            };
+
+            _context.StudentProfili.Add(profil);
+            await _context.SaveChangesAsync();
+
+            return profil;
+        }
+
+        private static int CountProjectItems(string? value)
+        {
+            return (value ?? string.Empty)
+                .Split(["\r\n", "\n"], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                .Length;
+        }
+
+        private static string GetNameFromEmail(string email)
+        {
+            var atIndex = email.IndexOf('@');
+            return atIndex > 0 ? email[..atIndex] : email;
         }
     }
 }

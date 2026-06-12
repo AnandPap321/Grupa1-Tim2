@@ -1,71 +1,105 @@
-﻿@model IEnumerable<ETFTalentProgram.Models.Verifikacija>
+@model ETFTalentProgram.ViewModels.VerifikacijaProfilaIndexViewModel
 
 @{
-    ViewData["Title"] = "Index";
+    ViewData["Title"] = "Verifikacija profila";
 }
 
-<h1>Index</h1>
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+    <div>
+        <h1 class="mb-1">Verifikacija profila</h1>
+        <p class="text-muted mb-0">Pregled studentskih i firmi profila koji cekaju referentsku provjeru.</p>
+    </div>
+</div>
 
-<p>
-    <a asp-action="Create">Create New</a>
-</p>
-<table class="table">
-    <thead>
-        <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.DatumPodnosenja)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.DatumVerifikacije)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.StatusVerifikacije)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Komentar)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Dokumenti)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Student)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Referent)
-            </th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-@foreach (var item in Model) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.DatumPodnosenja)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.DatumVerifikacije)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.StatusVerifikacije)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Komentar)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Dokumenti)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Student.Id)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Referent.Id)
-            </td>
-            <td>
-                <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
-            </td>
-        </tr>
+@if (TempData["StatusMessage"] is string message)
+{
+    <div class="alert alert-success">@message</div>
 }
-    </tbody>
-</table>
+
+<section class="mb-5">
+    <h2 class="h4 mb-3">Studenti</h2>
+    <div class="table-responsive">
+        <table class="table align-middle">
+            <thead>
+                <tr>
+                    <th>Student</th>
+                    <th>Email</th>
+                    <th>Indeks</th>
+                    <th>Rang</th>
+                    <th>Status</th>
+                    <th>Zadnja izmjena</th>
+                    <th>Akcije</th>
+                </tr>
+            </thead>
+            <tbody>
+            @foreach (var item in Model.StudentProfili)
+            {
+                <tr>
+                    <td>@(string.IsNullOrWhiteSpace(item.ImePrezime) ? $"Student #{item.StudentId}" : item.ImePrezime)</td>
+                    <td>@item.Email</td>
+                    <td>@(string.IsNullOrWhiteSpace(item.BrojIndeksa) ? "-" : item.BrojIndeksa)</td>
+                    <td>@item.Rang.ToString("0.0")</td>
+                    <td>@item.StatusVerifikacije</td>
+                    <td>@item.DatumAzuriranja.ToString("dd.MM.yyyy HH:mm")</td>
+                    <td>
+                        <div class="d-flex flex-wrap gap-2">
+                            <a class="btn btn-sm btn-outline-secondary" asp-controller="StudentProfil" asp-action="Details" asp-route-id="@item.ProfilId">Detalji</a>
+                            <a class="btn btn-sm btn-outline-primary" asp-controller="StudentProfil" asp-action="Edit" asp-route-id="@item.ProfilId">Uredi</a>
+                            <form asp-action="VerifikujStudentProfil" asp-route-id="@item.ProfilId" method="post">
+                                <button class="btn btn-sm btn-success" type="submit">Verifikuj</button>
+                            </form>
+                            <form asp-action="OdbijStudentProfil" asp-route-id="@item.ProfilId" method="post">
+                                <button class="btn btn-sm btn-outline-danger" type="submit">Odbij</button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<section>
+    <h2 class="h4 mb-3">Firme</h2>
+    <div class="table-responsive">
+        <table class="table align-middle">
+            <thead>
+                <tr>
+                    <th>Firma</th>
+                    <th>Email</th>
+                    <th>Lokacija</th>
+                    <th>Website</th>
+                    <th>Status</th>
+                    <th>Zadnja izmjena</th>
+                    <th>Akcije</th>
+                </tr>
+            </thead>
+            <tbody>
+            @foreach (var item in Model.FirmaProfili)
+            {
+                <tr>
+                    <td>@(string.IsNullOrWhiteSpace(item.Naziv) ? $"Firma #{item.FirmaId}" : item.Naziv)</td>
+                    <td>@item.Email</td>
+                    <td>@(string.IsNullOrWhiteSpace(item.Lokacija) ? "-" : item.Lokacija)</td>
+                    <td>@(string.IsNullOrWhiteSpace(item.Website) ? "-" : item.Website)</td>
+                    <td>@item.StatusVerifikacije</td>
+                    <td>@item.DatumAzuriranja.ToString("dd.MM.yyyy HH:mm")</td>
+                    <td>
+                        <div class="d-flex flex-wrap gap-2">
+                            <a class="btn btn-sm btn-outline-secondary" asp-controller="FirmaProfil" asp-action="Details" asp-route-id="@item.ProfilId">Detalji</a>
+                            <a class="btn btn-sm btn-outline-primary" asp-controller="FirmaProfil" asp-action="Edit" asp-route-id="@item.ProfilId">Uredi</a>
+                            <form asp-action="VerifikujFirmaProfil" asp-route-id="@item.ProfilId" method="post">
+                                <button class="btn btn-sm btn-success" type="submit">Verifikuj</button>
+                            </form>
+                            <form asp-action="OdbijFirmaProfil" asp-route-id="@item.ProfilId" method="post">
+                                <button class="btn btn-sm btn-outline-danger" type="submit">Odbij</button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+</section>

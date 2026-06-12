@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ETFTalentProgram.Controllers
 {
-    [Authorize(Roles = AppRoles.Firma)]
+    [Authorize(Roles = $"{AppRoles.Firma},{AppRoles.Referent}")]
     public class FirmaProfilController : Controller
     {
         private readonly ApplicationDbContext _context;
@@ -22,6 +22,7 @@ namespace ETFTalentProgram.Controllers
         }
 
         // GET: FirmaProfil
+        [Authorize(Roles = AppRoles.Firma)]
         public async Task<IActionResult> Index()
         {
             var applicationDbContext = _context.FirmaProfili.Include(f => f.Firma);
@@ -48,6 +49,7 @@ namespace ETFTalentProgram.Controllers
         }
 
         // GET: FirmaProfil/Create
+        [Authorize(Roles = AppRoles.Firma)]
         public IActionResult Create()
         {
             ViewData["FirmaId"] = new SelectList(_context.Firme, "Id", "Id");
@@ -73,43 +75,95 @@ namespace ETFTalentProgram.Controllers
         }
 
         // GET: FirmaProfil/Edit - Gets current user's profile
-        public async Task<IActionResult> Edit()
+        public async Task<IActionResult> Edit(long? id)
         {
-            var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
-            if (string.IsNullOrEmpty(userId))
+            FirmaProfil? firmaProfil;
+
+            if (User.IsInRole(AppRoles.Referent))
             {
-                return NotFound();
+                if (id == null)
+                {
+                    return NotFound();
+                }
+
+                firmaProfil = await _context.FirmaProfili
+                    .Include(f => f.Firma)
+                    .FirstOrDefaultAsync(f => f.Id == id);
+            }
+            else
+            {
+                var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+                if (string.IsNullOrEmpty(userId))
+                {
+                    return NotFound();
+                }
+
+                var firma = await _context.Firme.FirstOrDefaultAsync(f => f.Email == User.Identity.Name);
+                if (firma == null)
+                {
+                    return NotFound();
+                }
+
+                firmaProfil = await _context.FirmaProfili.FirstOrDefaultAsync(f => f.FirmaId == firma.Id);
             }
 
-            var firma = await _context.Firme.FirstOrDefaultAsync(f => f.Email == User.Identity.Name);
-            if (firma == null)
-            {
-                return NotFound();
-            }
-
-            var firmaProfil = await _context.FirmaProfili.FirstOrDefaultAsync(f => f.FirmaId == firma.Id);
             if (firmaProfil == null)
             {
                 return NotFound();
             }
 
-            ViewData["FirmaId"] = new SelectList(_context.Firme, "Id", "Id", firmaProfil.FirmaId);
+            ViewData["FirmaId"] = new SelectList(_context.Firme, "Id", "Email", firmaProfil.FirmaId);
             return View(firmaProfil);
         }
 
         // POST: FirmaProfil/Edit
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit([Bind("Id,KratakOpis,PunOpis,Lokacija,Website,KontaktEmail,Logotip,TehnologijeStack,DatumAzuriranja,FirmaId")] FirmaProfil firmaProfil)
+        public async Task<IActionResult> Edit([Bind("Id,KratakOpis,PunOpis,Lokacija,Website,KontaktEmail,Logotip,TehnologijeStack,DatumAzuriranja,FirmaId,StatusVerifikacije")] FirmaProfil firmaProfil)
         {
             if (ModelState.IsValid)
             {
                 try
                 {
-                    _context.Update(firmaProfil);
+                    var existingProfil = await _context.FirmaProfili.FindAsync(firmaProfil.Id);
+                    if (existingProfil == null)
+                    {
+                        return NotFound();
+                    }
+
+                    if (!User.IsInRole(AppRoles.Referent) && existingProfil.FirmaId != firmaProfil.FirmaId)
+                    {
+                        return Forbid();
+                    }
+
+                    existingProfil.KratakOpis = firmaProfil.KratakOpis;
+                    existingProfil.PunOpis = firmaProfil.PunOpis;
+                    existingProfil.Lokacija = firmaProfil.Lokacija;
+                    existingProfil.Website = firmaProfil.Website;
+                    existingProfil.KontaktEmail = firmaProfil.KontaktEmail;
+                    existingProfil.Logotip = firmaProfil.Logotip;
+                    existingProfil.TehnologijeStack = firmaProfil.TehnologijeStack;
+                    existingProfil.DatumAzuriranja = DateTime.UtcNow;
+                    existingProfil.FirmaId = firmaProfil.FirmaId;
+
+                    if (User.IsInRole(AppRoles.Referent))
+                    {
+                        existingProfil.StatusVerifikacije = firmaProfil.StatusVerifikacije;
+                    }
+                    else
+                    {
+                        existingProfil.StatusVerifikacije = StatusVerifikacije.NA_CEKANJU;
+                    }
+
                     await _context.SaveChangesAsync();
-                    await _logService.InfoAsync("FIRMA_PROFIL_AZURIRAN", $"Azuriran profil firme ID {firmaProfil.FirmaId}.");
+                    await _logService.InfoAsync("FIRMA_PROFIL_AZURIRAN", $"Azuriran profil firme ID {existingProfil.FirmaId} sa statusom {existingProfil.StatusVerifikacije}.");
                     TempData["StatusMessage"] = "Profil je uspješno ažuriran.";
+
+                    if (User.IsInRole(AppRoles.Referent))
+                    {
+                        return RedirectToAction("Index", "Verifikacija");
+                    }
+
                     return RedirectToAction(nameof(Edit));
                 }
                 catch (DbUpdateConcurrencyException)
@@ -124,7 +178,7 @@ namespace ETFTalentProgram.Controllers
                     }
                 }
             }
-            ViewData["FirmaId"] = new SelectList(_context.Firme, "Id", "Id", firmaProfil.FirmaId);
+            ViewData["FirmaId"] = new SelectList(_context.Firme, "Id", "Email", firmaProfil.FirmaId);
             return View(firmaProfil);
         }
 
