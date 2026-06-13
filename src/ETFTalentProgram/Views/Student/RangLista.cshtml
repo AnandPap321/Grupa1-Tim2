@@ -1,0 +1,52 @@
+@model IReadOnlyList<ETFTalentProgram.ViewModels.StudentRangViewModel>
+
+@{
+    ViewData["Title"] = "Rang studenata";
+}
+
+@await Html.PartialAsync("_StudentNavigation")
+
+<div class="mx-auto mb-5" style="max-width: 1040px;">
+    <div class="d-flex flex-column flex-md-row justify-content-between gap-3 mb-3">
+        <div>
+            <h2 class="h4 fw-bold mb-1">Rang studenata</h2>
+            <p class="text-muted mb-0">Score se formira iz polozenih predmeta, ocjena, ECTS bodova i vlastitih projekata.</p>
+        </div>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-hover align-middle">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Student</th>
+                    <th>Prosjek</th>
+                    <th>Predmeti</th>
+                    <th>ECTS</th>
+                    <th>Projekti</th>
+                    <th>Vjestine</th>
+                    <th class="text-end">Rang</th>
+                </tr>
+            </thead>
+            <tbody>
+                @for (var i = 0; i < Model.Count; i++)
+                {
+                    var student = Model[i];
+                    <tr>
+                        <td>@(i + 1)</td>
+                        <td>
+                            <div class="fw-semibold">@student.ImePrezime</div>
+                            <div class="text-muted small">@student.BrojIndeksa</div>
+                        </td>
+                        <td>@student.ProsjekOcjena.ToString("0.00")</td>
+                        <td>@student.BrojPolozenihPredmeta</td>
+                        <td>@student.UkupnoEcts</td>
+                        <td>@student.BrojProjekata</td>
+                        <td class="text-muted small">@student.Vjestine</td>
+                        <td class="text-end fw-semibold">@student.Rang.ToString("0.00")</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

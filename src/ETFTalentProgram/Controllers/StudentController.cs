@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Authorization;
 using ETFTalentProgram.Constants;
 using ETFTalentProgram.Data;
 using ETFTalentProgram.Models;
+using ETFTalentProgram.Services;
 using ETFTalentProgram.ViewModels;
 
 namespace ETFTalentProgram.Controllers
@@ -16,10 +17,14 @@ namespace ETFTalentProgram.Controllers
     public class StudentController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly IStudentRangService _studentRangService;
+        private readonly ILogService _logService;
 
-        public StudentController(ApplicationDbContext context)
+        public StudentController(ApplicationDbContext context, IStudentRangService studentRangService, ILogService logService)
         {
             _context = context;
+            _studentRangService = studentRangService;
+            _logService = logService;
         }
 
         // GET: Student
@@ -61,6 +66,15 @@ namespace ETFTalentProgram.Controllers
                 .ToListAsync();
 
             return View(prijave);
+        }
+
+        // GET: Student/RangLista
+        [Authorize(Roles = $"{AppRoles.Student},{AppRoles.Firma}")]
+        public async Task<IActionResult> RangLista()
+        {
+            var rangLista = await _studentRangService.GetRangListaAsync();
+            await _logService.InfoAsync("RANG_STUDENATA_PREGLEDAN", $"Korisnik je pregledao rang listu studenata. Broj prikazanih studenata: {rangLista.Count}.");
+            return View(rangLista);
         }
 
         // GET: Student/Details/5

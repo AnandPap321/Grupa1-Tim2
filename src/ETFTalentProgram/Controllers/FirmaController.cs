@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Authorization;
 using ETFTalentProgram.Constants;
 using ETFTalentProgram.Data;
 using ETFTalentProgram.Models;
+using ETFTalentProgram.Services;
 using ETFTalentProgram.ViewModels;
 
 namespace ETFTalentProgram.Controllers
@@ -16,10 +17,14 @@ namespace ETFTalentProgram.Controllers
     public class FirmaController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly IStudentRangService _studentRangService;
+        private readonly ILogService _logService;
 
-        public FirmaController(ApplicationDbContext context)
+        public FirmaController(ApplicationDbContext context, IStudentRangService studentRangService, ILogService logService)
         {
             _context = context;
+            _studentRangService = studentRangService;
+            _logService = logService;
         }
 
         // GET: Firma
@@ -64,6 +69,60 @@ namespace ETFTalentProgram.Controllers
                 .ToDictionaryAsync(x => x.OglasId, x => x.Broj);
 
             return View(oglasi);
+        }
+
+        // GET: Firma/RangLista
+        [Authorize(Roles = AppRoles.Firma)]
+        public async Task<IActionResult> RangLista()
+        {
+            var rangLista = await _studentRangService.GetRangListaAsync();
+            await _logService.InfoAsync("RANG_STUDENATA_PREGLEDAN", $"Firma je pregledala rang listu studenata. Broj prikazanih studenata: {rangLista.Count}.");
+            return View(rangLista);
+        }
+
+        // POST: Firma/KontaktirajStudenta/5
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles = AppRoles.Firma)]
+        public async Task<IActionResult> KontaktirajStudenta(long id)
+        {
+            var firma = await GetOrCreateCurrentFirmaAsync();
+            var student = await _context.Studenti.FirstOrDefaultAsync(s => s.Id == id);
+
+            if (student == null)
+            {
+                return NotFound();
+            }
+
+            var vecKontaktiran = await _context.Ponude.AnyAsync(p =>
+                p.PosiljalacId == firma.Id &&
+                p.PrimalacId == student.Id &&
+                p.TipPonude == TipPonude.FIRMA_STUDENTU &&
+                p.Status == StatusPonude.POSLANO);
+
+            if (vecKontaktiran)
+            {
+                await _logService.WarningAsync("STUDENT_VEC_KONTAKTIRAN", $"Firma ID {firma.Id} je pokusala ponovo kontaktirati studenta ID {student.Id}.");
+                TempData["StatusMessage"] = "Student je vec kontaktiran.";
+                return RedirectToAction(nameof(RangLista));
+            }
+
+            var nazivFirme = string.IsNullOrWhiteSpace(firma.Naziv) ? firma.Email : firma.Naziv;
+            _context.Ponude.Add(new Ponuda
+            {
+                PosiljalacId = firma.Id,
+                PrimalacId = student.Id,
+                TekstPoruke = $"{nazivFirme} zeli stupiti u kontakt sa studentom {student.Ime} {student.Prezime}.",
+                DatumSlanja = DateTime.UtcNow,
+                Status = StatusPonude.POSLANO,
+                TipPonude = TipPonude.FIRMA_STUDENTU
+            });
+
+            await _context.SaveChangesAsync();
+            await _logService.InfoAsync("STUDENT_KONTAKTIRAN", $"Firma ID {firma.Id} je kontaktirala studenta ID {student.Id} kroz ponudu.");
+            TempData["StatusMessage"] = "Student je kontaktiran kroz ponudu.";
+
+            return RedirectToAction(nameof(RangLista));
         }
 
         // GET: Firma/Uredi_oglas/5
@@ -124,6 +183,7 @@ namespace ETFTalentProgram.Controllers
             existingOglas.Kompenzacija = oglas.Kompenzacija?.Trim() ?? string.Empty;
 
             await _context.SaveChangesAsync();
+            await _logService.InfoAsync("FIRMA_OGLAS_AZURIRAN", $"Firma ID {firma.Id} je azurirala oglas ID {existingOglas.Id}: {existingOglas.Naslov}.");
             TempData["StatusMessage"] = "Oglas je uspješno ažuriran.";
 
             return RedirectToAction(nameof(MojiOglasi));
@@ -146,6 +206,7 @@ namespace ETFTalentProgram.Controllers
 
             oglas.StatusOglasa = StatusOglasa.ARHIVIRAN;
             await _context.SaveChangesAsync();
+            await _logService.WarningAsync("FIRMA_OGLAS_ARHIVIRAN", $"Firma ID {firma.Id} je skinula oglas ID {oglas.Id}: {oglas.Naslov}.");
 
             TempData["StatusMessage"] = "Oglas je skinut sa aktivnih oglasa.";
             return RedirectToAction(nameof(MojiOglasi));
@@ -204,6 +265,7 @@ namespace ETFTalentProgram.Controllers
             prijava.DatumOdgovora = status == StatusPrijave.PREGLEDANA ? prijava.DatumOdgovora : DateTime.UtcNow;
 
             await _context.SaveChangesAsync();
+            await _logService.InfoAsync("STATUS_PRIJAVE_PROMIJENJEN", $"Firma ID {firma.Id} je promijenila status prijave ID {prijava.Id} na {status}.");
             TempData["StatusMessage"] = $"Status prijave je promijenjen u {status}.";
 
             return RedirectToAction(nameof(Prijave), new { id = prijava.OglasId });
@@ -398,6 +460,7 @@ namespace ETFTalentProgram.Controllers
                     existingProfil.DatumAzuriranja = DateTime.UtcNow;
                     existingProfil.StatusVerifikacije = StatusVerifikacije.NA_CEKANJU;
                     await _context.SaveChangesAsync();
+                    await _logService.InfoAsync("FIRMA_PROFIL_AZURIRAN", $"Firma ID {firma.Id} je azurirala profil firme i poslala ga na ponovnu verifikaciju.");
                     TempData["StatusMessage"] = "Profil firme je uspješno ažuriran i poslan na ponovnu verifikaciju.";
                     return RedirectToAction(nameof(Profil_firme));
                 }
@@ -452,6 +515,7 @@ namespace ETFTalentProgram.Controllers
                 oglas.RokPrijave = oglas.RokPrijave == default ? DateTime.Today.AddDays(30) : oglas.RokPrijave;
                 _context.Add(oglas);
                 await _context.SaveChangesAsync();
+                await _logService.InfoAsync("FIRMA_OGLAS_OBJAVLJEN", $"Firma ID {firma.Id} je objavila oglas ID {oglas.Id}: {oglas.Naslov}.");
                 TempData["StatusMessage"] = "Oglas je uspješno objavljen.";
                 return RedirectToAction(nameof(Index));
             }

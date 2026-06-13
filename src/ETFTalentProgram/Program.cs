@@ -34,6 +34,7 @@ builder.Services.ConfigureApplicationCookie(options =>
 builder.Services.AddControllersWithViews();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<ILogService, LogService>();
+builder.Services.AddScoped<IStudentRangService, StudentRangService>();
 
 var app = builder.Build();
 

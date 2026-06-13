@@ -5,6 +5,8 @@
     var isDashboardActive = currentController == "Firma" && currentAction == "Index";
     var isProfilActive = currentController == "Firma" && currentAction == "Profil_firme";
     var isOglasActive = currentController == "Firma" && currentAction == "Objavi_oglas";
+    var isRangActive = currentController == "Firma" && currentAction == "RangLista";
+    var isPretragaActive = currentController == "StudentProfil" && currentAction == "Search";
     var isMojiOglasiActive = currentController == "Firma"
         && (currentAction == "MojiOglasi" || currentAction == "Prijave" || currentAction == "Uredi_oglas");
 }
@@ -44,6 +46,20 @@
                href="@Url.Action("MojiOglasi", "Firma")"
                role="tab">
                 Moji oglasi
+            </a>
+        </li>
+        <li class="nav-item" role="presentation">
+            <a class="nav-link @(isPretragaActive ? "active" : "")"
+               href="@Url.Action("Search", "StudentProfil")"
+               role="tab">
+                Pretraga studenata
+            </a>
+        </li>
+        <li class="nav-item" role="presentation">
+            <a class="nav-link @(isRangActive ? "active" : "")"
+               href="@Url.Action("RangLista", "Firma")"
+               role="tab">
+                Rang studenata
             </a>
         </li>
     </ul>

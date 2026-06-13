@@ -159,7 +159,13 @@ namespace ETFTalentProgram.Controllers
         }
 
         [Authorize(Roles = AppRoles.Firma)]
-        public async Task<IActionResult> Search(string? q, double? minimalniRang, string? tehnologija)
+        public async Task<IActionResult> Search(
+            string? q,
+            double? minimalniRang,
+            string? tehnologija,
+            string? predmet,
+            string? projekat,
+            bool samoZavrsnaGodina = true)
         {
             var profili = await _context.StudentProfili
                 .Include(p => p.Student)
@@ -167,15 +173,33 @@ namespace ETFTalentProgram.Controllers
 
             var normalizedQuery = NormalizeText(q).ToLowerInvariant();
             var normalizedTechnology = NormalizeText(tehnologija).ToLowerInvariant();
+            var normalizedSubject = NormalizeText(predmet).ToLowerInvariant();
+            var normalizedProject = NormalizeText(projekat).ToLowerInvariant();
+            var studentIds = profili.Select(p => p.StudentId).ToList();
+            var akademskiPodaci = await _context.AkademskiPodaci
+                .Where(a => studentIds.Contains(a.StudentId))
+                .ToListAsync();
+
+            var studentIdsSaPredmetom = akademskiPodaci
+                .Where(a => string.IsNullOrEmpty(normalizedSubject)
+                    || a.Predmet.ToLowerInvariant().Contains(normalizedSubject)
+                    || a.SifraPredmeta.ToLowerInvariant().Contains(normalizedSubject))
+                .Select(a => a.StudentId)
+                .ToHashSet();
 
             var filtered = profili
                 .Where(p => string.IsNullOrEmpty(normalizedQuery)
                     || (p.Student != null && $"{p.Student.Ime} {p.Student.Prezime}".ToLowerInvariant().Contains(normalizedQuery))
-                    || (p.Vjestine ?? string.Empty).ToLowerInvariant().Contains(normalizedQuery))
+                    || (p.Vjestine ?? string.Empty).ToLowerInvariant().Contains(normalizedQuery)
+                    || (p.Projekti ?? string.Empty).ToLowerInvariant().Contains(normalizedQuery))
                 .Where(p => minimalniRang == null || p.Rang >= minimalniRang)
+                .Where(p => !samoZavrsnaGodina || (p.Student != null && (p.Student.GodinaStudija >= 3 || p.Student.Verificiran)))
+                .Where(p => string.IsNullOrEmpty(normalizedSubject) || studentIdsSaPredmetom.Contains(p.StudentId))
                 .Where(p => string.IsNullOrEmpty(normalizedTechnology)
                     || (p.Vjestine ?? string.Empty).ToLowerInvariant().Contains(normalizedTechnology)
                     || (p.PreferiraneTehnologije ?? string.Empty).ToLowerInvariant().Contains(normalizedTechnology))
+                .Where(p => string.IsNullOrEmpty(normalizedProject)
+                    || (p.Projekti ?? string.Empty).ToLowerInvariant().Contains(normalizedProject))
                 .OrderByDescending(p => p.Rang)
                 .ThenBy(p => p.Student != null ? p.Student.Prezime : string.Empty)
                 .ToList();
@@ -189,6 +213,13 @@ namespace ETFTalentProgram.Controllers
             ViewData["Query"] = q;
             ViewData["MinimalniRang"] = minimalniRang;
             ViewData["Tehnologija"] = tehnologija;
+            ViewData["Predmet"] = predmet;
+            ViewData["Projekat"] = projekat;
+            ViewData["SamoZavrsnaGodina"] = samoZavrsnaGodina;
+
+            await _logService.InfoAsync(
+                "PRETRAGA_STUDENATA",
+                $"Firma je pretrazila studente. Query='{NormalizeText(q)}', tehnologija='{NormalizeText(tehnologija)}', predmet='{NormalizeText(predmet)}', projekat='{NormalizeText(projekat)}', minimalniRang='{minimalniRang}', samoZavrsnaGodina='{samoZavrsnaGodina}', brojRezultata={filtered.Count}.");
 
             return View(models);
         }
