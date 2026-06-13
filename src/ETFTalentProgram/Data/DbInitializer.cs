@@ -15,6 +15,42 @@ namespace ETFTalentProgram.Data
             AppRoles.Administrator
         ];
 
+        private static readonly (string Email, string Password, string Role)[] SeedUsers =
+        [
+            ("admin@etf.ba", "Admin123!", AppRoles.Administrator),
+            ("firma@etf.ba", "Firma123!", AppRoles.Firma),
+            ("student@etf.ba", "Student123!", AppRoles.Student),
+            ("referent@etf.ba", "Referent123!", AppRoles.Referent)
+        ];
+
+        private static async Task CreateUserIfNotExists(
+            UserManager<ApplicationUser> userManager,
+            string email,
+            string password,
+            string role
+            )
+        {
+            var existingUser = await userManager.FindByEmailAsync(email);
+
+            if (existingUser != null)
+                return;
+
+            var user = new ApplicationUser
+            {
+                UserName = email,
+                Email = email,
+                EmailConfirmed = true,
+                DatumRegistracije = DateTime.UtcNow
+            };
+
+            var result = await userManager.CreateAsync(user, password);
+
+            if (result.Succeeded)
+            {
+                await userManager.AddToRoleAsync(user, role);
+            }
+        }
+
         public static async Task InitializeAsync(IServiceProvider serviceProvider)
         {
             using var scope = serviceProvider.CreateScope();
@@ -34,76 +70,9 @@ namespace ETFTalentProgram.Data
                 }
             }
 
-            const string adminEmail = "admin@etf.ba";
-            if (await userManager.FindByEmailAsync(adminEmail) == null)
+            foreach (var (email, password, role) in SeedUsers)
             {
-                var admin = new ApplicationUser
-                {
-                    UserName = adminEmail,
-                    Email = adminEmail,
-                    EmailConfirmed = true,
-                    DatumRegistracije = DateTime.UtcNow
-                };
-
-                var result = await userManager.CreateAsync(admin, "Admin123!");
-                if (result.Succeeded)
-                {
-                    await userManager.AddToRoleAsync(admin, AppRoles.Administrator);
-                }
-            }
-
-            const string firmaEmail = "firma@etf.ba";
-            if (await userManager.FindByEmailAsync(firmaEmail) == null)
-            {
-                var firma = new ApplicationUser
-                {
-                    UserName = firmaEmail,
-                    Email = firmaEmail,
-                    EmailConfirmed = true,
-                    DatumRegistracije = DateTime.UtcNow
-                };
-
-                var result = await userManager.CreateAsync(firma, "Firma123!");
-                if (result.Succeeded)
-                {
-                    await userManager.AddToRoleAsync(firma, AppRoles.Firma);
-                }
-            }
-
-            const string studentEmail = "student@etf.ba";
-            if (await userManager.FindByEmailAsync(studentEmail) == null)
-            {
-                var student = new ApplicationUser
-                {
-                    UserName = studentEmail,
-                    Email = studentEmail,
-                    EmailConfirmed = true,
-                    DatumRegistracije = DateTime.UtcNow
-                };
-
-                var result = await userManager.CreateAsync(student, "Student123!");
-                if (result.Succeeded)
-                {
-                    await userManager.AddToRoleAsync(student, AppRoles.Student);
-                }
-            }
-
-            const string referentEmail = "referent@etf.ba";
-            if (await userManager.FindByEmailAsync(referentEmail) == null)
-            {
-                var referent = new ApplicationUser
-                {
-                    UserName = referentEmail,
-                    Email = referentEmail,
-                    EmailConfirmed = true,
-                    DatumRegistracije = DateTime.UtcNow
-                };
-
-                var result = await userManager.CreateAsync(referent, "Referent123!");
-                if (result.Succeeded)
-                {
-                    await userManager.AddToRoleAsync(referent, AppRoles.Referent);
-                }
+                await CreateUserIfNotExists(userManager, email, password, role);
             }
         }
     }
