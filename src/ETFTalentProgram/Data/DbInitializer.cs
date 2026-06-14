@@ -7,9 +7,6 @@ namespace ETFTalentProgram.Data
 {
     public static class DbInitializer
     {
-        // ------------------------------------------------------------------ //
-        // Uloge – isti niz kao originalni initializer
-        // ------------------------------------------------------------------ //
         private static readonly string[] Roles =
         [
             AppRoles.Student,
@@ -18,47 +15,37 @@ namespace ETFTalentProgram.Data
             AppRoles.Administrator
         ];
 
-        // ------------------------------------------------------------------ //
-        // Seed korisnici za Identity (ApplicationUser) – isti kao original
-        // ------------------------------------------------------------------ //
         private static readonly (string Email, string Password, string Role)[] SeedUsers =
         [
-            ("admin@etf.ba",     "Admin123!",    AppRoles.Administrator),
-            ("firma@etf.ba",     "Firma123!",    AppRoles.Firma),
-            ("student@etf.ba",   "Student123!",  AppRoles.Student),
-            ("referent@etf.ba",  "Referent123!", AppRoles.Referent)
+            ("admin@etf.ba",    "Admin123!",    AppRoles.Administrator),
+            ("firma@etf.ba",    "Firma123!",    AppRoles.Firma),
+            ("student@etf.ba",  "Student123!",  AppRoles.Student),
+            ("referent@etf.ba", "Referent123!", AppRoles.Referent)
         ];
 
-        // ------------------------------------------------------------------ //
-        // Lozinke za dodatne seed korisnike
-        // ------------------------------------------------------------------ //
         private const string StudentPassword = "Student123!";
         private const string FirmaPassword = "Firma123!";
         private const string ReferentPassword = "Referent123!";
         private const string AdminPassword = "Admin123!";
 
         // ================================================================== //
-        // ENTRY POINT – poziva se iz Program.cs
+        // ENTRY POINT
         // ================================================================== //
         public static async Task InitializeAsync(IServiceProvider serviceProvider)
         {
             using var scope = serviceProvider.CreateScope();
             var services = scope.ServiceProvider;
-
             var context = services.GetRequiredService<ApplicationDbContext>();
             var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
             var userManager = services.GetRequiredService<UserManager<ApplicationUser>>();
 
             await context.Database.MigrateAsync();
 
-            // 1. Uloge
             await SeedRolesAsync(roleManager);
 
-            // 2. Osnovni Identity korisnici (original SeedUsers)
             foreach (var (email, password, role) in SeedUsers)
                 await CreateUserIfNotExists(userManager, email, password, role);
 
-            // 3. Domenski podaci
             await SeedAdministratorAsync(context, userManager);
             await SeedReferentiAsync(context, userManager);
             await SeedFirmeAsync(context, userManager);
@@ -77,14 +64,12 @@ namespace ETFTalentProgram.Data
         private static async Task SeedRolesAsync(RoleManager<IdentityRole> roleManager)
         {
             foreach (var role in Roles)
-            {
                 if (!await roleManager.RoleExistsAsync(role))
                     await roleManager.CreateAsync(new IdentityRole(role));
-            }
         }
 
         // ================================================================== //
-        // HELPER – isti kao u originalnom initializer-u
+        // HELPER
         // ================================================================== //
         private static async Task<ApplicationUser?> CreateUserIfNotExists(
             UserManager<ApplicationUser> userManager,
@@ -92,9 +77,8 @@ namespace ETFTalentProgram.Data
             string password,
             string role)
         {
-            var existingUser = await userManager.FindByEmailAsync(email);
-            if (existingUser != null)
-                return existingUser;
+            var existing = await userManager.FindByEmailAsync(email);
+            if (existing != null) return existing;
 
             var user = new ApplicationUser
             {
@@ -106,7 +90,6 @@ namespace ETFTalentProgram.Data
             };
 
             var result = await userManager.CreateAsync(user, password);
-
             if (result.Succeeded)
                 await userManager.AddToRoleAsync(user, role);
 
@@ -122,11 +105,10 @@ namespace ETFTalentProgram.Data
         {
             if (await context.Administratori.AnyAsync()) return;
 
-            // Poveži postojeći seed korisnik admin@etf.ba s domenskim entitetom
             var adminData = new[]
             {
-                new { Email = "admin@etf.ba",         Ime = "Sistem",  Prezime = "Administrator", Nivo = 5 },
-                new { Email = "admin2@etf.unsa.ba",   Ime = "Glavni",  Prezime = "Admin",         Nivo = 3 },
+                new { Email = "admin@etf.ba",       Ime = "Sistem", Prezime = "Administrator", Nivo = 5 },
+                new { Email = "admin2@etf.unsa.ba", Ime = "Glavni", Prezime = "Admin",         Nivo = 3 },
             };
 
             foreach (var a in adminData)
@@ -161,9 +143,9 @@ namespace ETFTalentProgram.Data
 
             var data = new[]
             {
-                new { Email = "referent@etf.ba",          Ime = "Amela",  Prezime = "Hašić", Odsjek = "Studentska služba" },
-                new { Email = "kenan.basic@etf.unsa.ba",  Ime = "Kenan",  Prezime = "Bašić", Odsjek = "Studentska služba" },
-                new { Email = "sanja.kovac@etf.unsa.ba",  Ime = "Sanja",  Prezime = "Kovač", Odsjek = "Referada"          },
+                new { Email = "referent@etf.ba",         Ime = "Amela", Prezime = "Hasic", Odsjek = "Studentska sluzba" },
+                new { Email = "kenan.basic@etf.unsa.ba", Ime = "Kenan", Prezime = "Basic", Odsjek = "Studentska sluzba" },
+                new { Email = "sanja.kovac@etf.unsa.ba", Ime = "Sanja", Prezime = "Kovac", Odsjek = "Referada"          },
             };
 
             foreach (var r in data)
@@ -200,7 +182,7 @@ namespace ETFTalentProgram.Data
             {
                 new
                 {
-                    Email      = "firma@etf.ba",         // mapira na originalni SeedUser
+                    Email      = "firma@etf.ba",
                     Naziv      = "Mistral Technologies",
                     Opis       = "Inovativna IT kompanija fokusirana na razvoj modernih web i mobilnih aplikacija.",
                     Lokacija   = "Sarajevo, Bosna i Hercegovina",
@@ -210,29 +192,29 @@ namespace ETFTalentProgram.Data
                     Velicina   = VelicinaFirme.SREDNJA,
                     Godina     = 2015,
                     KratakOpis = "Vodimo inovaciju u regiji.",
-                    PunOpis    = "Mistral Technologies je osnovan 2015. godine s ciljem pružanja visokokvalitetnih softverskih rješenja klijentima širom regije. Tim od 80+ inženjera razvija web platforme, mobilne aplikacije i cloud rješenja.",
+                    PunOpis    = "Mistral Technologies je osnovan 2015. godine s ciljem pruzanja visokokvalitetnih softverskih rjesenja klijentima sirom regije.",
                     Stack      = "React,Node.js,TypeScript,PostgreSQL,Docker,AWS"
                 },
                 new
                 {
                     Email      = "careers@infinity.ba",
                     Naziv      = "Infinity Solutions",
-                    Opis       = "Kompanija specijalizovana za enterprise softverska rješenja i ERP sisteme.",
+                    Opis       = "Kompanija specijalizovana za enterprise softverska rjesenja i ERP sisteme.",
                     Lokacija   = "Sarajevo, Bosna i Hercegovina",
                     Website    = "https://infinity.ba",
                     Kontakt    = "careers@infinity.ba",
                     Sektor     = "Enterprise Software",
                     Velicina   = VelicinaFirme.VELIKA,
                     Godina     = 2008,
-                    KratakOpis = "Enterprise rješenja za budućnost.",
-                    PunOpis    = "Infinity Solutions je jedna od vodećih IT kompanija u BiH s više od 200 zaposlenih. Pružamo ERP, CRM i custom enterprise rješenja velikim kompanijama u regiji.",
+                    KratakOpis = "Enterprise rjesenja za buducnost.",
+                    PunOpis    = "Infinity Solutions je jedna od vodecih IT kompanija u BiH s vise od 200 zaposlenih.",
                     Stack      = "Java,Spring Boot,Oracle DB,Angular,Kubernetes,Azure"
                 },
                 new
                 {
                     Email      = "jobs@bingo.ba",
                     Naziv      = "Bingo d.o.o.",
-                    Opis       = "Vodeći maloprodajni lanac koji aktivno razvija digitalne kapacitete.",
+                    Opis       = "Vodeci maloprodajni lanac koji aktivno razvija digitalne kapacitete.",
                     Lokacija   = "Tuzla, Bosna i Hercegovina",
                     Website    = "https://bingo.ba",
                     Kontakt    = "it@bingo.ba",
@@ -240,22 +222,22 @@ namespace ETFTalentProgram.Data
                     Velicina   = VelicinaFirme.VELIKA,
                     Godina     = 1993,
                     KratakOpis = "Digitalizujemo maloprodaju.",
-                    PunOpis    = "Bingo je jedan od najvećih poslodavaca u BiH. IT sektor razvija interne digitalne platforme, e-commerce rješenja i logistički softver.",
+                    PunOpis    = "Bingo je jedan od najvecih poslodavaca u BiH. IT sektor razvija interne digitalne platforme i logisticki softver.",
                     Stack      = "PHP,Laravel,Vue.js,MySQL,Redis"
                 },
                 new
                 {
                     Email      = "talent@altair.ba",
                     Naziv      = "Altair Nano",
-                    Opis       = "Startup fokusiran na IoT i embedded systems rješenja.",
+                    Opis       = "Startup fokusiran na IoT i embedded systems rjesenja.",
                     Lokacija   = "Mostar, Bosna i Hercegovina",
                     Website    = "https://altair.ba",
                     Kontakt    = "talent@altair.ba",
                     Sektor     = "IoT / Embedded Systems",
                     Velicina   = VelicinaFirme.MALA,
                     Godina     = 2020,
-                    KratakOpis = "Spajamo fizički i digitalni svijet.",
-                    PunOpis    = "Altair Nano je mladi startup koji razvija IoT platforme i embedded firmware za pametne uređaje. Radimo s klijentima iz EU i SAD.",
+                    KratakOpis = "Spajamo fizicki i digitalni svijet.",
+                    PunOpis    = "Altair Nano razvija IoT platforme i embedded firmware za pametne uredaje.",
                     Stack      = "C,C++,Python,MQTT,Raspberry Pi,STM32"
                 },
                 new
@@ -270,7 +252,7 @@ namespace ETFTalentProgram.Data
                     Velicina   = VelicinaFirme.MALA,
                     Godina     = 2018,
                     KratakOpis = "Dizajniramo digitalna iskustva.",
-                    PunOpis    = "Spark Digital je boutique digitalna agencija s 25 zaposlenih. Kombinujemo UX istraživanje, vizualni dizajn i front-end razvoj da bismo kreirali nezaboravna digitalna iskustva.",
+                    PunOpis    = "Spark Digital kombinuje UX istrazivanje, vizualni dizajn i front-end razvoj.",
                     Stack      = "Figma,React,Next.js,Tailwind CSS,Strapi"
                 }
             };
@@ -331,16 +313,16 @@ namespace ETFTalentProgram.Data
             {
                 new
                 {
-                    Email         = "student@etf.ba",              // mapira na originalni SeedUser
+                    Email         = "student@etf.ba",
                     Ime           = "Marko",
-                    Prezime       = "Petrović",
+                    Prezime       = "Petrovic",
                     BrIndeksa     = "12345",
                     GodinaStudija = 3,
                     GodinaUpisa   = 2022,
                     Prosjek       = 9.2,
                     Verificiran   = true,
                     Status        = Status.AKTIVAN,
-                    Biografija    = "Student treće godine softverskog inženjerstva s interesom za web development i cloud tehnologije.",
+                    Biografija    = "Student trece godine softverskog inzenjerstva s interesom za web development i cloud tehnologije.",
                     Vjestine      = "React,TypeScript,Node.js,PostgreSQL,Docker",
                     Projekti      = "E-commerce platforma (React/Node.js), CLI alat za analizu logova (Python)",
                     PrefLokacije  = "Sarajevo,Remote",
@@ -350,25 +332,25 @@ namespace ETFTalentProgram.Data
                     VerStatus     = StatusVerifikacije.VERIFICIRAN,
                     Predmeti      = new[]
                     {
-                        new { Naziv = "Web programiranje",                    Sifra = "CS301", Ocjena = 10, ECTS = 6, Sem = 5, Godina = 2024 },
-                        new { Naziv = "Baze podataka",                        Sifra = "CS201", Ocjena = 9,  ECTS = 6, Sem = 3, Godina = 2023 },
-                        new { Naziv = "Objektno orijentisano programiranje",  Sifra = "CS101", Ocjena = 9,  ECTS = 7, Sem = 1, Godina = 2022 },
-                        new { Naziv = "Algoritmi i strukture podataka",       Sifra = "CS202", Ocjena = 10, ECTS = 6, Sem = 4, Godina = 2024 },
-                        new { Naziv = "Operativni sistemi",                   Sifra = "CS203", Ocjena = 8,  ECTS = 5, Sem = 4, Godina = 2024 },
+                        new { Naziv = "Web programiranje",                   Sifra = "CS301", Ocjena = 10, ECTS = 6, Sem = 5, Godina = 2024 },
+                        new { Naziv = "Baze podataka",                       Sifra = "CS201", Ocjena = 9,  ECTS = 6, Sem = 3, Godina = 2023 },
+                        new { Naziv = "Objektno orijentisano programiranje", Sifra = "CS101", Ocjena = 9,  ECTS = 7, Sem = 1, Godina = 2022 },
+                        new { Naziv = "Algoritmi i strukture podataka",      Sifra = "CS202", Ocjena = 10, ECTS = 6, Sem = 4, Godina = 2024 },
+                        new { Naziv = "Operativni sistemi",                  Sifra = "CS203", Ocjena = 8,  ECTS = 5, Sem = 4, Godina = 2024 },
                     }
                 },
                 new
                 {
                     Email         = "ana.kovac@etf.unsa.ba",
                     Ime           = "Ana",
-                    Prezime       = "Kovač",
+                    Prezime       = "Kovac",
                     BrIndeksa     = "12346",
                     GodinaStudija = 4,
                     GodinaUpisa   = 2021,
                     Prosjek       = 9.5,
                     Verificiran   = true,
                     Status        = Status.AKTIVAN,
-                    Biografija    = "Studentica završne godine fokusirana na backend development i DevOps. Iskustvo s cloud platformama.",
+                    Biografija    = "Studentica zavrsne godine fokusirana na backend development i DevOps.",
                     Vjestine      = "Java,Spring Boot,Docker,Kubernetes,PostgreSQL",
                     Projekti      = "Mikroservisna arhitektura za e-learning (Java/Spring), CI/CD pipeline (GitLab CI)",
                     PrefLokacije  = "Sarajevo",
@@ -378,24 +360,24 @@ namespace ETFTalentProgram.Data
                     VerStatus     = StatusVerifikacije.VERIFICIRAN,
                     Predmeti      = new[]
                     {
-                        new { Naziv = "Distribuirani sistemi",     Sifra = "CS401", Ocjena = 10, ECTS = 6, Sem = 7, Godina = 2024 },
-                        new { Naziv = "Softversko inženjerstvo",   Sifra = "CS302", Ocjena = 9,  ECTS = 6, Sem = 5, Godina = 2023 },
-                        new { Naziv = "Mreže računara",            Sifra = "CS301", Ocjena = 9,  ECTS = 6, Sem = 5, Godina = 2023 },
-                        new { Naziv = "Baze podataka",             Sifra = "CS201", Ocjena = 10, ECTS = 6, Sem = 3, Godina = 2022 },
+                        new { Naziv = "Distribuirani sistemi",   Sifra = "CS401", Ocjena = 10, ECTS = 6, Sem = 7, Godina = 2024 },
+                        new { Naziv = "Softversko inzenjerstvo", Sifra = "CS302", Ocjena = 9,  ECTS = 6, Sem = 5, Godina = 2023 },
+                        new { Naziv = "Mreze racunara",          Sifra = "CS301", Ocjena = 9,  ECTS = 6, Sem = 5, Godina = 2023 },
+                        new { Naziv = "Baze podataka",           Sifra = "CS201", Ocjena = 10, ECTS = 6, Sem = 3, Godina = 2022 },
                     }
                 },
                 new
                 {
                     Email         = "emir.hasic@etf.unsa.ba",
                     Ime           = "Emir",
-                    Prezime       = "Hašić",
+                    Prezime       = "Hasic",
                     BrIndeksa     = "12347",
                     GodinaStudija = 3,
                     GodinaUpisa   = 2022,
                     Prosjek       = 8.3,
                     Verificiran   = true,
                     Status        = Status.AKTIVAN,
-                    Biografija    = "Strastveni full-stack developer s iskustvom u React i Laravel projektima. Volim rad na otvorenom kodu.",
+                    Biografija    = "Strastveni full-stack developer s iskustvom u React i Laravel projektima.",
                     Vjestine      = "React,PHP,Laravel,MySQL,Git",
                     Projekti      = "Blog platforma (Laravel/React), Plugin za VS Code (TypeScript)",
                     PrefLokacije  = "Sarajevo,Mostar,Remote",
@@ -414,14 +396,14 @@ namespace ETFTalentProgram.Data
                 {
                     Email         = "nina.medic@etf.unsa.ba",
                     Ime           = "Nina",
-                    Prezime       = "Medić",
+                    Prezime       = "Medic",
                     BrIndeksa     = "12348",
                     GodinaStudija = 4,
                     GodinaUpisa   = 2021,
                     Prosjek       = 8.9,
                     Verificiran   = true,
                     Status        = Status.AKTIVAN,
-                    Biografija    = "Studentica završne godine s iskustvom u React i TypeScript projektima. Fokusirana na frontend development.",
+                    Biografija    = "Studentica zavrsne godine s iskustvom u React i TypeScript projektima.",
                     Vjestine      = "React,TypeScript,CSS,Figma,Vue.js",
                     Projekti      = "Portfolio stranica (Next.js), Dashboard za analitiku (React/Chart.js)",
                     PrefLokacije  = "Sarajevo,Remote",
@@ -431,7 +413,7 @@ namespace ETFTalentProgram.Data
                     VerStatus     = StatusVerifikacije.VERIFICIRAN,
                     Predmeti      = new[]
                     {
-                        new { Naziv = "Interakcija čovjek-računar", Sifra = "CS303", Ocjena = 10, ECTS = 5, Sem = 5, Godina = 2023 },
+                        new { Naziv = "Interakcija covjek-racunar", Sifra = "CS303", Ocjena = 10, ECTS = 5, Sem = 5, Godina = 2023 },
                         new { Naziv = "Web programiranje",           Sifra = "CS301", Ocjena = 9,  ECTS = 6, Sem = 5, Godina = 2023 },
                         new { Naziv = "Grafika i vizualizacija",     Sifra = "CS304", Ocjena = 9,  ECTS = 5, Sem = 6, Godina = 2024 },
                     }
@@ -440,14 +422,14 @@ namespace ETFTalentProgram.Data
                 {
                     Email         = "adnan.salihovic@etf.unsa.ba",
                     Ime           = "Adnan",
-                    Prezime       = "Salihovič",
+                    Prezime       = "Salihovic",
                     BrIndeksa     = "12349",
                     GodinaStudija = 3,
                     GodinaUpisa   = 2022,
                     Prosjek       = 8.4,
                     Verificiran   = true,
                     Status        = Status.AKTIVAN,
-                    Biografija    = "Backend developer zainteresovan za Java ekosistem i mikroservise. Aktivni doprinioc open source projektima.",
+                    Biografija    = "Backend developer zainteresovan za Java ekosistem i mikroservise.",
                     Vjestine      = "Java,Spring Boot,PostgreSQL,Docker,REST API",
                     Projekti      = "API gateway za mikroservise (Spring Cloud), Sistem za upravljanje zalihama (Java/PostgreSQL)",
                     PrefLokacije  = "Sarajevo",
@@ -466,24 +448,24 @@ namespace ETFTalentProgram.Data
                 {
                     Email         = "lejla.mujic@etf.unsa.ba",
                     Ime           = "Lejla",
-                    Prezime       = "Mujić",
+                    Prezime       = "Mujic",
                     BrIndeksa     = "12350",
                     GodinaStudija = 2,
                     GodinaUpisa   = 2023,
                     Prosjek       = 7.8,
                     Verificiran   = false,
                     Status        = Status.AKTIVAN,
-                    Biografija    = "Studentica druge godine s interesom za data science i mašinsko učenje.",
+                    Biografija    = "Studentica druge godine s interesom za data science i masinsko ucenje.",
                     Vjestine      = "Python,NumPy,Pandas,SQL",
-                    Projekti      = "Analiza skupa podataka za predviđanje cijena nekretnina (Python/scikit-learn)",
+                    Projekti      = "Analiza skupa podataka za predvidanje cijena nekretnina (Python/scikit-learn)",
                     PrefLokacije  = "Remote",
                     PrefTeh       = "Python,TensorFlow",
                     DostupanOd    = DateTime.UtcNow.AddMonths(6),
-                    Rang          = 0.0,  // nije verificiran, rang se ne računa
+                    Rang          = 0.0,
                     VerStatus     = StatusVerifikacije.NA_CEKANJU,
                     Predmeti      = new[]
                     {
-                        new { Naziv = "Matematička analiza 1", Sifra = "MA101", Ocjena = 8, ECTS = 7, Sem = 1, Godina = 2023 },
+                        new { Naziv = "Matematicka analiza 1", Sifra = "MA101", Ocjena = 8, ECTS = 7, Sem = 1, Godina = 2023 },
                         new { Naziv = "Linearna algebra",      Sifra = "MA102", Ocjena = 7, ECTS = 6, Sem = 2, Godina = 2024 },
                     }
                 },
@@ -567,26 +549,30 @@ namespace ETFTalentProgram.Data
 
         // ================================================================== //
         // 7. OGLASI
+        // FIX: dohvat po emailu umjesto po indeksu
         // ================================================================== //
         private static async Task SeedOglasiAsync(ApplicationDbContext context)
         {
             if (await context.Oglasi.AnyAsync()) return;
 
-            var firme = await context.Firme.OrderBy(f => f.Id).ToListAsync();
-            if (firme.Count < 5) return;
+            var firmeMap = await context.Firme
+                .ToDictionaryAsync(f => f.Email, f => f.Id);
 
-            var mistral = firme[0];
-            var infinity = firme[1];
-            var bingo = firme[2];
-            var altair = firme[3];
-            var spark = firme[4];
+            if (firmeMap.Count == 0)
+            {
+                Console.WriteLine("[SEED] UPOZORENJE: Nema firmi u bazi, oglasi se preskacaju.");
+                return;
+            }
+
+            long GetFirmaId(string email) =>
+                firmeMap.TryGetValue(email, out var id) ? id : firmeMap.Values.First();
 
             context.Oglasi.AddRange(
                 new Oglas
                 {
-                    FirmaId = mistral.Id,
+                    FirmaId = GetFirmaId("firma@etf.ba"),
                     Naslov = "Frontend Developer",
-                    Opis = "Tražimo entuzijastičnog Frontend Developera koji će se pridružiti našem timu. Radit ćete na razvoju modernih React aplikacija za klijente širom regije.",
+                    Opis = "Trazimo entuzijasticnog Frontend Developera koji ce se prikljuciti nasem timu. Radit cete na razvoju modernih React aplikacija za klijente sirom regije.",
                     Tehnologije = "React,TypeScript,CSS,REST API",
                     TipOglasa = TipOglasa.POSAO,
                     TipAngazmana = TipAngazmana.PUNO_RADNO_VRIJEME,
@@ -600,7 +586,7 @@ namespace ETFTalentProgram.Data
                 },
                 new Oglas
                 {
-                    FirmaId = mistral.Id,
+                    FirmaId = GetFirmaId("firma@etf.ba"),
                     Naslov = "Backend Developer (Node.js)",
                     Opis = "Rad na Node.js microservices arhitekturi s PostgreSQL bazom i Docker containerima.",
                     Tehnologije = "Node.js,PostgreSQL,Docker,REST API",
@@ -616,9 +602,9 @@ namespace ETFTalentProgram.Data
                 },
                 new Oglas
                 {
-                    FirmaId = infinity.Id,
+                    FirmaId = GetFirmaId("careers@infinity.ba"),
                     Naslov = "Java Backend Developer",
-                    Opis = "Tražimo iskusnog Java developera za rad na enterprise aplikacijama. Koristimo Spring Boot, Hibernate i Oracle bazu.",
+                    Opis = "Trazimo iskusnog Java developera za rad na enterprise aplikacijama. Koristimo Spring Boot, Hibernate i Oracle bazu.",
                     Tehnologije = "Java,Spring Boot,Oracle DB,Hibernate",
                     TipOglasa = TipOglasa.POSAO,
                     TipAngazmana = TipAngazmana.PUNO_RADNO_VRIJEME,
@@ -632,9 +618,9 @@ namespace ETFTalentProgram.Data
                 },
                 new Oglas
                 {
-                    FirmaId = infinity.Id,
-                    Naslov = "Studentska praksa – QA Inžinjer",
-                    Opis = "Nudimo tromjesečnu plaćenu praksu iz oblasti osiguranja kvaliteta softvera. Naučit ćete pisati testove, koristiti Selenium i Jira alate.",
+                    FirmaId = GetFirmaId("careers@infinity.ba"),
+                    Naslov = "Studentska praksa - QA Inzinjer",
+                    Opis = "Nudimo tromjesecnu placenu praksu iz oblasti osiguranja kvaliteta softvera.",
                     Tehnologije = "Selenium,Jira,SQL,Postman",
                     TipOglasa = TipOglasa.PRAKSA,
                     TipAngazmana = TipAngazmana.POLA_RADNOG_VREMENA,
@@ -648,9 +634,9 @@ namespace ETFTalentProgram.Data
                 },
                 new Oglas
                 {
-                    FirmaId = bingo.Id,
+                    FirmaId = GetFirmaId("jobs@bingo.ba"),
                     Naslov = "PHP / Laravel Developer",
-                    Opis = "Razvoj i održavanje internih e-commerce i logističkih rješenja. Rad u timu od 10 developera na modernoj Laravel arhitekturi.",
+                    Opis = "Razvoj i odrzavanje internih e-commerce i logistickih rjesenja.",
                     Tehnologije = "PHP,Laravel,MySQL,Vue.js",
                     TipOglasa = TipOglasa.POSAO,
                     TipAngazmana = TipAngazmana.PUNO_RADNO_VRIJEME,
@@ -664,9 +650,9 @@ namespace ETFTalentProgram.Data
                 },
                 new Oglas
                 {
-                    FirmaId = altair.Id,
+                    FirmaId = GetFirmaId("talent@altair.ba"),
                     Naslov = "Embedded Systems Developer (Praksa)",
-                    Opis = "Idealna praksa za studente koji žele naučiti programiranje mikrokontrolera i IoT protokole. Mentorski program i mogućnost zaposlenja.",
+                    Opis = "Idealna praksa za studente koji zele nauciti programiranje mikrokontrolera i IoT protokole.",
                     Tehnologije = "C,C++,STM32,MQTT,FreeRTOS",
                     TipOglasa = TipOglasa.PRAKSA,
                     TipAngazmana = TipAngazmana.POLA_RADNOG_VREMENA,
@@ -680,9 +666,9 @@ namespace ETFTalentProgram.Data
                 },
                 new Oglas
                 {
-                    FirmaId = spark.Id,
-                    Naslov = "UX/UI Designer & Frontend Developer",
-                    Opis = "Tražimo kreativnu osobu koja kombinuje dizajnerske vještine s frontend razvojem. Koristimo Figma za dizajn i Next.js za implementaciju.",
+                    FirmaId = GetFirmaId("hr@spark.ba"),
+                    Naslov = "UX/UI Designer i Frontend Developer",
+                    Opis = "Trazimo kreativnu osobu koja kombinuje dizajnerske vjestine s frontend razvojem.",
                     Tehnologije = "Figma,Next.js,React,Tailwind CSS",
                     TipOglasa = TipOglasa.POSAO,
                     TipAngazmana = TipAngazmana.REMOTE,
@@ -696,7 +682,7 @@ namespace ETFTalentProgram.Data
                 },
                 new Oglas
                 {
-                    FirmaId = mistral.Id,
+                    FirmaId = GetFirmaId("firma@etf.ba"),
                     Naslov = "Junior React Developer (zatvoreno)",
                     Opis = "Pozicija je popunjena. Hvala svima koji su aplicirali.",
                     Tehnologije = "React,JavaScript",
@@ -717,232 +703,252 @@ namespace ETFTalentProgram.Data
 
         // ================================================================== //
         // 8. PRIJAVE OGLASA
+        // FIX: dohvat po emailu/naslovu umjesto po indeksu
         // ================================================================== //
         private static async Task SeedPrijaveAsync(ApplicationDbContext context)
         {
             if (await context.PrijaveOglasa.AnyAsync()) return;
 
-            var studenti = await context.Studenti.OrderBy(s => s.Id).ToListAsync();
-            var oglasi = await context.Oglasi
-                               .Where(o => o.StatusOglasa == StatusOglasa.AKTIVAN)
-                               .OrderBy(o => o.Id)
-                               .ToListAsync();
+            var studentiMap = await context.Studenti
+                .ToDictionaryAsync(s => s.Email, s => s.Id);
 
-            if (studenti.Count < 5 || oglasi.Count < 5) return;
+            var oglasiMap = await context.Oglasi
+                .Where(o => o.StatusOglasa == StatusOglasa.AKTIVAN)
+                .ToDictionaryAsync(o => o.Naslov, o => o.Id);
 
-            context.PrijaveOglasa.AddRange(
-                new PrijavaOglas
+            if (studentiMap.Count == 0 || oglasiMap.Count == 0)
+            {
+                Console.WriteLine("[SEED] UPOZORENJE: Nema studenata ili oglasa, prijave se preskacaju.");
+                return;
+            }
+
+            bool TryStudent(string email, out long id) =>
+                studentiMap.TryGetValue(email, out id);
+            bool TryOglas(string naslov, out long id) =>
+                oglasiMap.TryGetValue(naslov, out id);
+
+            var prijave = new List<PrijavaOglas>();
+
+            if (TryStudent("student@etf.ba", out var markoId) &&
+                TryOglas("Frontend Developer", out var frontendId))
+                prijave.Add(new PrijavaOglas
                 {
-                    StudentId = studenti[0].Id,   // Marko → Frontend (Mistral)
-                    OglasId = oglasi[0].Id,
+                    StudentId = markoId,
+                    OglasId = frontendId,
                     DatumPrijave = DateTime.UtcNow.AddDays(-12),
-                    PropratniTekst = "Apliciram na poziciju Frontend Developera. Imam iskustvo u React i TypeScript kroz akademske i lične projekte.",
+                    PropratniTekst = "Apliciram na poziciju Frontend Developera. Imam iskustvo u React i TypeScript kroz akademske i licne projekte.",
                     StatusPrijave = StatusPrijave.PREGLEDANA,
                     DatumOdgovora = DateTime.UtcNow.AddDays(-10)
-                },
-                new PrijavaOglas
+                });
+
+            if (TryStudent("student@etf.ba", out markoId) &&
+                TryOglas("Backend Developer (Node.js)", out var backendId))
+                prijave.Add(new PrijavaOglas
                 {
-                    StudentId = studenti[0].Id,   // Marko → Backend (Mistral)
-                    OglasId = oglasi[1].Id,
+                    StudentId = markoId,
+                    OglasId = backendId,
                     DatumPrijave = DateTime.UtcNow.AddDays(-6),
-                    PropratniTekst = "Zainteresovan za Backend poziciju. Solidno znanje Node.js i PostgreSQL iz ličnih projekata.",
+                    PropratniTekst = "Zainteresovan za Backend poziciju. Solidno znanje Node.js i PostgreSQL iz licnih projekata.",
                     StatusPrijave = StatusPrijave.NOVA,
                     DatumOdgovora = null
-                },
-                new PrijavaOglas
+                });
+
+            if (TryStudent("ana.kovac@etf.unsa.ba", out var anaId) &&
+                TryOglas("Java Backend Developer", out var javaId))
+                prijave.Add(new PrijavaOglas
                 {
-                    StudentId = studenti[1].Id,   // Ana → Java Backend (Infinity)
-                    OglasId = oglasi[2].Id,
+                    StudentId = anaId,
+                    OglasId = javaId,
                     DatumPrijave = DateTime.UtcNow.AddDays(-18),
-                    PropratniTekst = "Završavam četvrtu godinu s prosjekom 9.5. Imam iskustvo u Java/Spring Boot ekosistemu i mikroservisnoj arhitekturi.",
+                    PropratniTekst = "Zavrsavam cetvrtu godinu s prosjekom 9.5. Imam iskustvo u Java/Spring Boot i mikroservisnoj arhitekturi.",
                     StatusPrijave = StatusPrijave.PRIHVACENA,
                     DatumOdgovora = DateTime.UtcNow.AddDays(-14)
-                },
-                new PrijavaOglas
+                });
+
+            if (TryStudent("emir.hasic@etf.unsa.ba", out var emirId) &&
+                TryOglas("Frontend Developer", out frontendId))
+                prijave.Add(new PrijavaOglas
                 {
-                    StudentId = studenti[2].Id,   // Emir → Frontend (Mistral)
-                    OglasId = oglasi[0].Id,
+                    StudentId = emirId,
+                    OglasId = frontendId,
                     DatumPrijave = DateTime.UtcNow.AddDays(-9),
-                    PropratniTekst = "Apliciram za Frontend poziciju. Imam iskustvo u React-u kroz rad na blog platformi i open source projektima.",
+                    PropratniTekst = "Apliciram za Frontend poziciju. Imam iskustvo u React-u kroz rad na blog platformi.",
                     StatusPrijave = StatusPrijave.NOVA,
                     DatumOdgovora = null
-                },
-                new PrijavaOglas
+                });
+
+            if (TryStudent("nina.medic@etf.unsa.ba", out var ninaId) &&
+                TryOglas("UX/UI Designer i Frontend Developer", out var uxId))
+                prijave.Add(new PrijavaOglas
                 {
-                    StudentId = studenti[3].Id,   // Nina → UX/UI (Spark)
-                    OglasId = oglasi[6].Id,
+                    StudentId = ninaId,
+                    OglasId = uxId,
                     DatumPrijave = DateTime.UtcNow.AddDays(-6),
-                    PropratniTekst = "Vaša pozicija je savršena kombinacija mojih vještina. Radim u Figmi i imam solidno React/TypeScript iskustvo.",
+                    PropratniTekst = "Vasa pozicija je savrsena kombinacija mojih vjestina. Radim u Figmi i imam React/TypeScript iskustvo.",
                     StatusPrijave = StatusPrijave.PREGLEDANA,
                     DatumOdgovora = DateTime.UtcNow.AddDays(-4)
-                },
-                new PrijavaOglas
+                });
+
+            if (TryStudent("adnan.salihovic@etf.unsa.ba", out var adnanId) &&
+                TryOglas("Java Backend Developer", out javaId))
+                prijave.Add(new PrijavaOglas
                 {
-                    StudentId = studenti[4].Id,   // Adnan → Java Backend (Infinity)
-                    OglasId = oglasi[2].Id,
+                    StudentId = adnanId,
+                    OglasId = javaId,
                     DatumPrijave = DateTime.UtcNow.AddDays(-20),
-                    PropratniTekst = "Zainteresiran za Java Backend poziciju. Radim s Spring Boot-om i PostgreSQL-om na akademskim projektima.",
+                    PropratniTekst = "Zainteresiran za Java Backend poziciju. Radim s Spring Boot-om i PostgreSQL-om.",
                     StatusPrijave = StatusPrijave.ODBIJENA,
                     DatumOdgovora = DateTime.UtcNow.AddDays(-16)
-                },
-                new PrijavaOglas
+                });
+
+            if (TryStudent("adnan.salihovic@etf.unsa.ba", out adnanId) &&
+                TryOglas("Studentska praksa - QA Inzinjer", out var qaId))
+                prijave.Add(new PrijavaOglas
                 {
-                    StudentId = studenti[4].Id,   // Adnan → QA Praksa (Infinity)
-                    OglasId = oglasi[3].Id,
+                    StudentId = adnanId,
+                    OglasId = qaId,
                     DatumPrijave = DateTime.UtcNow.AddDays(-4),
-                    PropratniTekst = "Apliciram za QA praksu. Voljan naučiti testiranje softvera u profesionalnom okruženju.",
+                    PropratniTekst = "Apliciram za QA praksu. Voljan nauciti testiranje softvera u profesionalnom okruzenju.",
                     StatusPrijave = StatusPrijave.NOVA,
                     DatumOdgovora = null
-                }
-            );
+                });
 
-            await context.SaveChangesAsync();
+            if (prijave.Count > 0)
+            {
+                context.PrijaveOglasa.AddRange(prijave);
+                await context.SaveChangesAsync();
+            }
         }
 
         // ================================================================== //
         // 9. PONUDE
+        // FIX: TPC nasljedivanje - Firma.Id == Korisnik.Id (shared PK)
+        // PosiljalacId/PrimalacId su FK na Korisnik hijerarhiju,
+        // a Firma.Id i Student.Id su direktno taj isti ID.
         // ================================================================== //
         private static async Task SeedPonudeAsync(ApplicationDbContext context)
         {
             if (await context.Ponude.AnyAsync()) return;
 
-            var studenti = await context.Studenti.OrderBy(s => s.Id).ToListAsync();
-            var firme = await context.Firme.OrderBy(f => f.Id).ToListAsync();
+            var firmeMap = await context.Firme.ToDictionaryAsync(f => f.Email, f => f.Id);
+            var studentiMap = await context.Studenti.ToDictionaryAsync(s => s.Email, s => s.Id);
 
-            if (studenti.Count < 5 || firme.Count < 5) return;
+            if (firmeMap.Count == 0 || studentiMap.Count == 0)
+            {
+                Console.WriteLine("[SEED] UPOZORENJE: Nema firmi ili studenata, ponude se preskacaju.");
+                return;
+            }
 
-            context.Ponude.AddRange(
-                new Ponuda
-                {
-                    PosiljalacId = firme[0].Id,     // Mistral → Marko
-                    PrimalacId = studenti[0].Id,
-                    TekstPoruke = "Poštovani Marko, pregledali smo vaš profil i zainteresovani smo za saradnju na poziciji Frontend Developer. Pozivamo vas na razgovor.",
-                    DatumSlanja = DateTime.UtcNow.AddDays(-11),
-                    Status = StatusPonude.NA_CEKANJU,
-                    TipPonude = TipPonude.FIRMA_STUDENTU,
-                    DatumOdgovora = null
-                },
-                new Ponuda
-                {
-                    PosiljalacId = firme[1].Id,     // Infinity → Ana
-                    PrimalacId = studenti[1].Id,
-                    TekstPoruke = "Poštovana Ana, vaš profil odgovara našim zahtjevima za Java Backend poziciju. Pozivamo vas na tehničku evaluaciju.",
-                    DatumSlanja = DateTime.UtcNow.AddDays(-9),
-                    Status = StatusPonude.PRIHVACENO,
-                    TipPonude = TipPonude.FIRMA_STUDENTU,
-                    DatumOdgovora = DateTime.UtcNow.AddDays(-7)
-                },
-                new Ponuda
-                {
-                    PosiljalacId = firme[4].Id,     // Spark → Nina
-                    PrimalacId = studenti[3].Id,
-                    TekstPoruke = "Poštovana Nina, vaš portfolio nas je impresionirao. Nudimo vam poziciju UX/UI Developer u Spark Digitalu, remote rad i fleksibilno radno vrijeme.",
-                    DatumSlanja = DateTime.UtcNow.AddDays(-5),
-                    Status = StatusPonude.NA_CEKANJU,
-                    TipPonude = TipPonude.FIRMA_STUDENTU,
-                    DatumOdgovora = null
-                },
-                new Ponuda
-                {
-                    PosiljalacId = firme[3].Id,     // Altair → Adnan
-                    PrimalacId = studenti[4].Id,
-                    TekstPoruke = "Poštovani Adnan, nudimo vam plaćenu praksu iz embedded systems programiranja. Idealna za studente koji žele raditi s hardverom i IoT tehnologijama.",
-                    DatumSlanja = DateTime.UtcNow.AddDays(-3),
-                    Status = StatusPonude.ODBIJENO,
-                    TipPonude = TipPonude.FIRMA_STUDENTU,
-                    DatumOdgovora = DateTime.UtcNow.AddDays(-1)
-                },
-                new Ponuda
-                {
-                    PosiljalacId = firme[0].Id,     // Mistral → Emir
-                    PrimalacId = studenti[2].Id,
-                    TekstPoruke = "Poštovani Emir, zainteresovani smo za vaše Laravel i React vještine. Nudimo junior poziciju s mentorskim programom.",
-                    DatumSlanja = DateTime.UtcNow.AddDays(-2),
-                    Status = StatusPonude.POSLANO,
-                    TipPonude = TipPonude.FIRMA_STUDENTU,
-                    DatumOdgovora = null
-                }
-            );
+            var ponude = new List<Ponuda>();
 
-            await context.SaveChangesAsync();
+            void DodajPonudu(string firmaEmail, string studentEmail,
+                             string tekst, StatusPonude status,
+                             int sentDaysAgo, DateTime? odgovor)
+            {
+                if (!firmeMap.TryGetValue(firmaEmail, out var firmaId)) return;
+                if (!studentiMap.TryGetValue(studentEmail, out var studId)) return;
+
+                ponude.Add(new Ponuda
+                {
+                    PosiljalacId = firmaId,   // Firma.Id == Korisnik.Id (TPC shared PK)
+                    PrimalacId = studId,    // Student.Id == Korisnik.Id (TPC shared PK)
+                    TekstPoruke = tekst,
+                    DatumSlanja = DateTime.UtcNow.AddDays(-sentDaysAgo),
+                    Status = status,
+                    TipPonude = TipPonude.FIRMA_STUDENTU,
+                    DatumOdgovora = odgovor
+                });
+            }
+
+            DodajPonudu("firma@etf.ba", "student@etf.ba",
+                "Postovani Marko, pregledali smo vas profil i zainteresovani smo za saradnju na poziciji Frontend Developer. Pozivamo vas na razgovor.",
+                StatusPonude.NA_CEKANJU, 11, null);
+
+            DodajPonudu("careers@infinity.ba", "ana.kovac@etf.unsa.ba",
+                "Postovana Ana, vas profil odgovara nasim zahtjevima za Java Backend poziciju. Pozivamo vas na tehnicku evaluaciju.",
+                StatusPonude.PRIHVACENO, 9, DateTime.UtcNow.AddDays(-7));
+
+            DodajPonudu("hr@spark.ba", "nina.medic@etf.unsa.ba",
+                "Postovana Nina, vas portfolio nas je impresionirao. Nudimo vam poziciju UX/UI Developer u Spark Digitalu, remote rad i fleksibilno radno vrijeme.",
+                StatusPonude.NA_CEKANJU, 5, null);
+
+            DodajPonudu("talent@altair.ba", "adnan.salihovic@etf.unsa.ba",
+                "Postovani Adnan, nudimo vam placenu praksu iz embedded systems programiranja.",
+                StatusPonude.ODBIJENO, 3, DateTime.UtcNow.AddDays(-1));
+
+            DodajPonudu("firma@etf.ba", "emir.hasic@etf.unsa.ba",
+                "Postovani Emir, zainteresovani smo za vase Laravel i React vjestine. Nudimo junior poziciju s mentorskim programom.",
+                StatusPonude.POSLANO, 2, null);
+
+            if (ponude.Count > 0)
+            {
+                context.Ponude.AddRange(ponude);
+                await context.SaveChangesAsync();
+            }
         }
 
         // ================================================================== //
         // 10. VERIFIKACIJE
+        // FIX: dohvat po emailu, relaxed guardovi, nullable referent
         // ================================================================== //
         private static async Task SeedVerifikacijeAsync(ApplicationDbContext context)
         {
             if (await context.Verifikacije.AnyAsync()) return;
 
-            var studenti = await context.Studenti.OrderBy(s => s.Id).ToListAsync();
-            var referenti = await context.Referenti.OrderBy(r => r.Id).ToListAsync();
+            var studentiMap = await context.Studenti.ToDictionaryAsync(s => s.Email, s => s.Id);
+            var referentiMap = await context.Referenti.ToDictionaryAsync(r => r.Email, r => r.Id);
 
-            if (studenti.Count < 6 || referenti.Count < 2) return;
+            if (studentiMap.Count == 0)
+            {
+                Console.WriteLine("[SEED] UPOZORENJE: Nema studenata, verifikacije se preskacaju.");
+                return;
+            }
 
-            context.Verifikacije.AddRange(
-                new Verifikacija
-                {
-                    StudentId = studenti[0].Id,
-                    ReferentId = referenti[0].Id,
-                    DatumPodnosenja = DateTime.UtcNow.AddDays(-90),
-                    DatumVerifikacije = DateTime.UtcNow.AddDays(-85),
-                    StatusVerifikacije = StatusVerifikacije.VERIFICIRAN,
-                    Komentar = "Podaci potvrđeni uvidom u zvanične evidencije fakulteta.",
-                    Dokumenti = ""
-                },
-                new Verifikacija
-                {
-                    StudentId = studenti[1].Id,
-                    ReferentId = referenti[0].Id,
-                    DatumPodnosenja = DateTime.UtcNow.AddDays(-70),
-                    DatumVerifikacije = DateTime.UtcNow.AddDays(-65),
-                    StatusVerifikacije = StatusVerifikacije.VERIFICIRAN,
-                    Komentar = "Akademski podaci verificirani. Prosjek i ECTS su tačni.",
-                    Dokumenti = ""
-                },
-                new Verifikacija
-                {
-                    StudentId = studenti[2].Id,
-                    ReferentId = referenti[1].Id,
-                    DatumPodnosenja = DateTime.UtcNow.AddDays(-60),
-                    DatumVerifikacije = DateTime.UtcNow.AddDays(-55),
-                    StatusVerifikacije = StatusVerifikacije.VERIFICIRAN,
-                    Komentar = "Verificirano bez primjedbi.",
-                    Dokumenti = ""
-                },
-                new Verifikacija
-                {
-                    StudentId = studenti[3].Id,
-                    ReferentId = referenti[0].Id,
-                    DatumPodnosenja = DateTime.UtcNow.AddDays(-50),
-                    DatumVerifikacije = DateTime.UtcNow.AddDays(-45),
-                    StatusVerifikacije = StatusVerifikacije.VERIFICIRAN,
-                    Komentar = "Sve u redu, podaci odgovaraju evidenciji.",
-                    Dokumenti = ""
-                },
-                new Verifikacija
-                {
-                    StudentId = studenti[4].Id,
-                    ReferentId = referenti[1].Id,
-                    DatumPodnosenja = DateTime.UtcNow.AddDays(-40),
-                    DatumVerifikacije = DateTime.UtcNow.AddDays(-35),
-                    StatusVerifikacije = StatusVerifikacije.VERIFICIRAN,
-                    Komentar = "Podaci potvrđeni.",
-                    Dokumenti = ""
-                },
-                new Verifikacija   // Lejla – na čekanju
-                {
-                    StudentId = studenti[5].Id,
-                    ReferentId = null,
-                    DatumPodnosenja = DateTime.UtcNow.AddDays(-5),
-                    DatumVerifikacije = null,
-                    StatusVerifikacije = StatusVerifikacije.NA_CEKANJU,
-                    Komentar = null,
-                    Dokumenti = ""
-                }
-            );
+            // Uzmi dostupne referente po emailu, uz fallback na prvog/drugog
+            referentiMap.TryGetValue("referent@etf.ba", out var ref1Id);
+            referentiMap.TryGetValue("kenan.basic@etf.unsa.ba", out var ref2Id);
 
-            await context.SaveChangesAsync();
+            // Ako specificni ne postoje, uzmi prvog dostupnog
+            if (ref1Id == 0) ref1Id = referentiMap.Values.FirstOrDefault();
+            if (ref2Id == 0) ref2Id = referentiMap.Values.Skip(1).FirstOrDefault();
+
+            long? Ref1 = ref1Id != 0 ? ref1Id : null;
+            long? Ref2 = ref2Id != 0 ? ref2Id : Ref1; // fallback na prvog
+
+            var verifikacije = new List<Verifikacija>();
+
+            void Dodaj(string studentEmail, long? referentId,
+                       StatusVerifikacije status, string? komentar,
+                       int daysAgo, int? resolvedDaysAgo)
+            {
+                if (!studentiMap.TryGetValue(studentEmail, out var studId)) return;
+
+                verifikacije.Add(new Verifikacija
+                {
+                    StudentId = studId,
+                    ReferentId = referentId,
+                    DatumPodnosenja = DateTime.UtcNow.AddDays(-daysAgo),
+                    DatumVerifikacije = resolvedDaysAgo.HasValue
+                                            ? DateTime.UtcNow.AddDays(-resolvedDaysAgo.Value)
+                                            : null,
+                    StatusVerifikacije = status,
+                    Komentar = komentar,
+                    Dokumenti = ""
+                });
+            }
+
+            Dodaj("student@etf.ba", Ref1, StatusVerifikacije.VERIFICIRAN, "Podaci potvrdjeni uvidom u zvanicne evidencije fakulteta.", 90, 85);
+            Dodaj("ana.kovac@etf.unsa.ba", Ref1, StatusVerifikacije.VERIFICIRAN, "Akademski podaci verificirani. Prosjek i ECTS su tacni.", 70, 65);
+            Dodaj("emir.hasic@etf.unsa.ba", Ref2, StatusVerifikacije.VERIFICIRAN, "Verificirano bez primjedbi.", 60, 55);
+            Dodaj("nina.medic@etf.unsa.ba", Ref1, StatusVerifikacije.VERIFICIRAN, "Sve u redu, podaci odgovaraju evidenciji.", 50, 45);
+            Dodaj("adnan.salihovic@etf.unsa.ba", Ref2, StatusVerifikacije.VERIFICIRAN, "Podaci potvrdjeni.", 40, 35);
+            Dodaj("lejla.mujic@etf.unsa.ba", null, StatusVerifikacije.NA_CEKANJU, null, 5, null);
+
+            if (verifikacije.Count > 0)
+            {
+                context.Verifikacije.AddRange(verifikacije);
+                await context.SaveChangesAsync();
+            }
         }
 
         // ================================================================== //
@@ -952,20 +958,24 @@ namespace ETFTalentProgram.Data
         {
             if (await context.Logovi.AnyAsync()) return;
 
-            var studenti = await context.Studenti.OrderBy(s => s.Id).ToListAsync();
-            var firme = await context.Firme.OrderBy(f => f.Id).ToListAsync();
+            var studentiMap = await context.Studenti.ToDictionaryAsync(s => s.Email, s => s.Id);
+            var firmeMap = await context.Firme.ToDictionaryAsync(f => f.Email, f => f.Id);
+
+            studentiMap.TryGetValue("student@etf.ba", out var markoId);
+            firmeMap.TryGetValue("firma@etf.ba", out var mistralId);
+            firmeMap.TryGetValue("hr@spark.ba", out var sparkId);
 
             context.Logovi.AddRange(
-                new Log { TipAkcije = "REGISTRACIJA", Nivo = NivoLoga.INFO, VrijemeAkcije = DateTime.UtcNow.AddDays(-120), KorisnikId = studenti.Count > 0 ? studenti[0].Id : null, IpAdresa = "192.168.1.10", Detalji = "Novi student registrovan: student@etf.ba" },
-                new Log { TipAkcije = "PRIJAVA", Nivo = NivoLoga.INFO, VrijemeAkcije = DateTime.UtcNow.AddDays(-2), KorisnikId = studenti.Count > 0 ? studenti[0].Id : null, IpAdresa = "192.168.1.10", Detalji = "Uspješna prijava: student@etf.ba" },
-                new Log { TipAkcije = "VERIFIKACIJA", Nivo = NivoLoga.INFO, VrijemeAkcije = DateTime.UtcNow.AddDays(-85), KorisnikId = studenti.Count > 0 ? studenti[0].Id : null, IpAdresa = "192.168.1.20", Detalji = "Verifikacija odobrena za studenta: student@etf.ba" },
-                new Log { TipAkcije = "VERIFIKACIJA", Nivo = NivoLoga.WARNING, VrijemeAkcije = DateTime.UtcNow.AddDays(-35), KorisnikId = null, IpAdresa = "192.168.1.20", Detalji = "Verifikacija odbijena – neispravni podaci" },
-                new Log { TipAkcije = "OGLAS", Nivo = NivoLoga.INFO, VrijemeAkcije = DateTime.UtcNow.AddDays(-14), KorisnikId = firme.Count > 0 ? firme[0].Id : null, IpAdresa = "10.0.0.5", Detalji = "Novi oglas kreiran: Frontend Developer (Mistral Technologies)" },
-                new Log { TipAkcije = "PRIJAVA_OGLAS", Nivo = NivoLoga.INFO, VrijemeAkcije = DateTime.UtcNow.AddDays(-12), KorisnikId = studenti.Count > 0 ? studenti[0].Id : null, IpAdresa = "192.168.1.10", Detalji = "Student aplicirao na oglas: Frontend Developer" },
+                new Log { TipAkcije = "REGISTRACIJA", Nivo = NivoLoga.INFO, VrijemeAkcije = DateTime.UtcNow.AddDays(-120), KorisnikId = markoId != 0 ? markoId : null, IpAdresa = "192.168.1.10", Detalji = "Novi student registrovan: student@etf.ba" },
+                new Log { TipAkcije = "PRIJAVA", Nivo = NivoLoga.INFO, VrijemeAkcije = DateTime.UtcNow.AddDays(-2), KorisnikId = markoId != 0 ? markoId : null, IpAdresa = "192.168.1.10", Detalji = "Uspjesna prijava: student@etf.ba" },
+                new Log { TipAkcije = "VERIFIKACIJA", Nivo = NivoLoga.INFO, VrijemeAkcije = DateTime.UtcNow.AddDays(-85), KorisnikId = markoId != 0 ? markoId : null, IpAdresa = "192.168.1.20", Detalji = "Verifikacija odobrena za studenta: student@etf.ba" },
+                new Log { TipAkcije = "VERIFIKACIJA", Nivo = NivoLoga.WARNING, VrijemeAkcije = DateTime.UtcNow.AddDays(-35), KorisnikId = null, IpAdresa = "192.168.1.20", Detalji = "Verifikacija odbijena - neispravni podaci" },
+                new Log { TipAkcije = "OGLAS", Nivo = NivoLoga.INFO, VrijemeAkcije = DateTime.UtcNow.AddDays(-14), KorisnikId = mistralId != 0 ? mistralId : null, IpAdresa = "10.0.0.5", Detalji = "Novi oglas kreiran: Frontend Developer (Mistral Technologies)" },
+                new Log { TipAkcije = "PRIJAVA_OGLAS", Nivo = NivoLoga.INFO, VrijemeAkcije = DateTime.UtcNow.AddDays(-12), KorisnikId = markoId != 0 ? markoId : null, IpAdresa = "192.168.1.10", Detalji = "Student aplicirao na oglas: Frontend Developer" },
                 new Log { TipAkcije = "SLANJE_EMAIL", Nivo = NivoLoga.ERROR, VrijemeAkcije = DateTime.UtcNow.AddDays(-11), KorisnikId = null, IpAdresa = "127.0.0.1", Detalji = "Slanje email notifikacije nije uspjelo: connection timeout" },
-                new Log { TipAkcije = "PRIJAVA", Nivo = NivoLoga.WARNING, VrijemeAkcije = DateTime.UtcNow.AddDays(-8), KorisnikId = null, IpAdresa = "10.0.0.99", Detalji = "Neuspješan pokušaj prijave: nepostojeci@test.com" },
-                new Log { TipAkcije = "PONUDA", Nivo = NivoLoga.INFO, VrijemeAkcije = DateTime.UtcNow.AddDays(-5), KorisnikId = firme.Count > 4 ? firme[4].Id : null, IpAdresa = "10.0.0.7", Detalji = "Ponuda poslana od Spark Digital" },
-                new Log { TipAkcije = "PRIJAVA", Nivo = NivoLoga.INFO, VrijemeAkcije = DateTime.UtcNow.AddHours(-3), KorisnikId = firme.Count > 0 ? firme[0].Id : null, IpAdresa = "10.0.0.5", Detalji = "Uspješna prijava: firma@etf.ba" }
+                new Log { TipAkcije = "PRIJAVA", Nivo = NivoLoga.WARNING, VrijemeAkcije = DateTime.UtcNow.AddDays(-8), KorisnikId = null, IpAdresa = "10.0.0.99", Detalji = "Neuspjesan pokusaj prijave: nepostojeci@test.com" },
+                new Log { TipAkcije = "PONUDA", Nivo = NivoLoga.INFO, VrijemeAkcije = DateTime.UtcNow.AddDays(-5), KorisnikId = sparkId != 0 ? sparkId : null, IpAdresa = "10.0.0.7", Detalji = "Ponuda poslana od Spark Digital" },
+                new Log { TipAkcije = "PRIJAVA", Nivo = NivoLoga.INFO, VrijemeAkcije = DateTime.UtcNow.AddHours(-3), KorisnikId = mistralId != 0 ? mistralId : null, IpAdresa = "10.0.0.5", Detalji = "Uspjesna prijava: firma@etf.ba" }
             );
 
             await context.SaveChangesAsync();

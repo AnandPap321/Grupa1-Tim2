@@ -10,7 +10,7 @@ namespace ETFTalentProgram.Models
         public DateTime DatumPodnosenja { get; set; }
         public DateTime? DatumVerifikacije { get; set; }
         public StatusVerifikacije StatusVerifikacije { get; set; }
-        public string Komentar { get; set; }
+        public string? Komentar { get; set; }
         public string Dokumenti { get; set; }
 
         [ForeignKey("Student")]
