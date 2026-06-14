@@ -8,3 +8,5 @@
 [Oo]bj/
 
 **/appsettings.Development.json
+
+.DS_Store
