@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ETFTalentProgram.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260614032207_AddJobOfferDescription")]
-    partial class AddJobOfferDescription
+    [Migration("20260614032207_KomentarVerifikacijeMozeBitiNull")]
+    partial class KomentarVerifikacijeMozeBitiNull
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
